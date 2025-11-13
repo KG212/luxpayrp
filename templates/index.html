@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head><title>LuxPay Web</title></head>
+<body>
+  <h1>Salary Calculator</h1>
+  <form method="POST">
+    Gross Salary: <input type="text" name="gross_salary"><br>
+    Car Cost: <input type="text" name="car_cost"><br>
+    Residence: <input type="text" name="residence"><br>
+    Social Class: 
+    <select name="social_class">
+      <option>Classe 1</option>
+      <option>Classe 1A</option>
+      <option>Classe 2</option>
+    </select><br>
+    <button type="submit">Calculate</button>
+  </form>
+
+  {% if result %}
+    <h2>Results</h2>
+    <p>Net Salary: {{ result.net }}</p>
+    <p>Restant (Monthly): {{ result.restant }}</p>
+    <p>Restant (Yearly): {{ result.restant_year }}</p>
+  {% endif %}
+</body>
+</html>
