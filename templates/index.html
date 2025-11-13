@@ -1,26 +1,65 @@
 <!DOCTYPE html>
-<html>
-<head><title>LuxPay Web</title></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LuxPay Web</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
 <body>
-  <h1>Salary Calculator</h1>
-  <form method="POST">
-    Gross Salary: <input type="text" name="gross_salary"><br>
-    Car Cost: <input type="text" name="car_cost"><br>
-    Residence: <input type="text" name="residence"><br>
-    Social Class: 
-    <select name="social_class">
-      <option>Classe 1</option>
-      <option>Classe 1A</option>
-      <option>Classe 2</option>
-    </select><br>
+  <h1>Salary Calculator (LuxPay)</h1>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <form method="POST" class="form-grid">
+    <label>Gross salary (month)
+      <input type="text" name="gross_salary" required>
+    </label>
+
+    <label>Company car benefit (month)
+      <input type="text" name="car_cost" required>
+    </label>
+
+    <label>Social class
+      <select name="social_class" required>
+        {% for sc in social_classes %}
+          <option value="{{ sc }}">{{ sc }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>Residence
+      <select name="residence" required>
+        {% for city in residences %}
+          <option value="{{ city }}">{{ city }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
     <button type="submit">Calculate</button>
   </form>
 
   {% if result %}
     <h2>Results</h2>
-    <p>Net Salary: {{ result.net }}</p>
-    <p>Restant (Monthly): {{ result.restant }}</p>
-    <p>Restant (Yearly): {{ result.restant_year }}</p>
+    <div class="grid">
+      <div><strong>Total month:</strong> {{ result.total_month }}</div>
+      <div><strong>Total year:</strong> {{ result.total_year }}</div>
+      <div><strong>Assurance maladie:</strong> {{ result.assurance_maladie }}</div>
+      <div><strong>Assurance maladie espèce:</strong> {{ result.assurance_maladie_espece }}</div>
+      <div><strong>Assurance pension:</strong> {{ result.assurance_pension }}</div>
+      <div><strong>Cotisations totales:</strong> {{ result.cotisations_totales }}</div>
+      <div><strong>Frais de déplacement:</strong> {{ result.frais_deplacement }}</div>
+      <div><strong>Imposable:</strong> {{ result.imposable }}</div>
+      <div><strong>Assurance dépendance:</strong> {{ result.assurance_dependance }}</div>
+      <div><strong>CIS:</strong> {{ result.cis }}</div>
+      <div><strong>Impot:</strong> {{ result.impot }}</div>
+      <div><strong>Net:</strong> {{ result.net }}</div>
+      <div><strong>Ticket deduction:</strong> {{ result.deduc_ticket }}</div>
+      <div><strong>Car benefit:</strong> {{ result.car_cost }}</div>
+      <div><strong>Received salary (month):</strong> {{ result.restant }}</div>
+      <div><strong>Received salary (year):</strong> {{ result.restant_year }}</div>
+    </div>
   {% endif %}
 </body>
 </html>
