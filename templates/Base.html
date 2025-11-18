@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}LuxPay{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+  <!-- Shared Menu -->
+  <div class="menu">
+    <h1>Welcome to LuxPay</h1>
+    <p>Select a calculator:</p>
+    <div class="buttons">
+      <a href="{{ url_for('salary') }}">💼 Salary Calculator</a>
+      <a href="{{ url_for('parental_leave') }}">👶 Parental Leave Calculator</a>
+      <a href="{{ url_for('creche') }}">🏡 Crèche Cost Calculator</a>
+    </div>
+  </div>
+
+  <!-- Page-specific content -->
+  <div class="content">
+    {% block content %}{% endblock %}
+  </div>
+
+</body>
+</html>
