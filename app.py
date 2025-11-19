@@ -31,7 +31,7 @@ def salary():
     return render_template("index.html", result=result, error=error,
                            social_classes=SOCIAL_CLASSES, residences=RESIDENCES)
 
-@app.route("/parental-leave")
+@app.route("/parental_leave")
 def parental_leave():
     return render_template("parental_leave.html")
 
