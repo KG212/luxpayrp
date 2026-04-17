@@ -90,9 +90,9 @@ def calculate_tax(imposable, social_class):
     return 0.0
 
 # SSM as of 1 January 2026 (index 968.04) — update on next indexation
-SSM_NON_QUALIFIED = 2703.74
-PARENTAL_LEAVE_MIN = SSM_NON_QUALIFIED          # 1× SSM
-PARENTAL_LEAVE_MAX = SSM_NON_QUALIFIED * 5      # 5× SSM = 13 518.70
+SSM_NON_QUALIFIED  = 2703.74
+PARENTAL_LEAVE_MIN = SSM_NON_QUALIFIED              # 1× SSM  = € 2 703.74
+PARENTAL_LEAVE_MAX = round(SSM_NON_QUALIFIED * 5/3, 2)  # 5/3× SSM = € 4 506.23
 
 LEAVE_TYPES = {
     "full_time":    {"label": "Full-time",    "reduction": 1.00, "duration_single": 4,  "duration_twins": 6},
@@ -100,33 +100,44 @@ LEAVE_TYPES = {
     "part_time_25": {"label": "Part-time 25%","reduction": 0.25, "duration_single": 16, "duration_twins": 20},
 }
 
+def _contributions(gross):
+    """Return (maladie, maladie_espece, pension, total) for a given gross income."""
+    maladie        = round(gross * 0.028,  2)
+    maladie_espece = round(gross * 0.0025, 2)
+    pension        = round(gross * 0.08,   2)
+    return maladie, maladie_espece, pension, round(maladie + maladie_espece + pension, 2)
+
 def calculate_parental_leave(avg_gross, leave_type, twins, social_class, residence):
-    config = LEAVE_TYPES[leave_type]
+    config    = LEAVE_TYPES[leave_type]
     reduction = config["reduction"]
-    duration = config["duration_twins"] if twins else config["duration_single"]
+    duration  = config["duration_twins"] if twins else config["duration_single"]
 
-    # CAE indemnity: average salary clamped to [SSM, 5×SSM] × reduction rate
-    base = max(PARENTAL_LEAVE_MIN, min(avg_gross, PARENTAL_LEAVE_MAX))
-    cae_indemnity = round(base * reduction, 2)
+    # --- CAE indemnity (separate employer) ---
+    # Base = avg salary clamped to [1×SSM, 5/3×SSM], then scaled by reduction rate
+    base      = max(PARENTAL_LEAVE_MIN, min(avg_gross, PARENTAL_LEAVE_MAX))
+    cae_gross = round(base * reduction, 2)
 
+    cae_mal, cae_mal_e, cae_pen, cae_cot = _contributions(cae_gross)
+    # CAE indemnity: no travel deduction (not commuting for this portion)
+    cae_imposable = round(cae_gross - cae_cot, 2)
+
+    # --- Employer salary (only for part-time leave) ---
     if leave_type == "full_time":
-        employer_salary = 0.0
-        total = cae_indemnity
-        frais_deplacement = 0.0          # not commuting during full-time leave
+        emp_gross     = 0.0
+        emp_mal = emp_mal_e = emp_pen = emp_cot = emp_frais = emp_imposable = 0.0
     else:
-        employer_salary = round(avg_gross * (1 - reduction), 2)
-        total = round(employer_salary + cae_indemnity, 2)
-        frais_deplacement = get_travel_deduction(residence)
+        emp_gross = round(avg_gross * (1 - reduction), 2)
+        emp_mal, emp_mal_e, emp_pen, emp_cot = _contributions(emp_gross)
+        emp_frais     = round(get_travel_deduction(residence), 2)
+        emp_imposable = round(emp_gross - emp_cot - emp_frais, 2)
 
-    total_year = total * 12
+    # --- Combined tax (both sources form a single annual tax base) ---
+    total_gross      = round(emp_gross + cae_gross, 2)
+    total_cotisations = round(emp_cot + cae_cot, 2)
+    total_imposable  = round(emp_imposable + cae_imposable, 2)
+    total_year       = total_gross * 12
 
-    assurance_maladie         = round(total * 0.028, 2)
-    assurance_maladie_espece  = round(total * 0.0025, 2)
-    assurance_pension         = round(total * 0.08, 2)
-    cotisations_totales       = round(assurance_maladie + assurance_maladie_espece + assurance_pension, 2)
-
-    imposable            = round(total - cotisations_totales - frais_deplacement, 2)
-    assurance_dependance = round((total - 535) * 0.014, 2)
+    assurance_dependance = round((total_gross - 535) * 0.014, 2)
 
     if total_year < 40000:
         cis = round(600 / 12, 2)
@@ -135,32 +146,43 @@ def calculate_parental_leave(avg_gross, leave_type, twins, social_class, residen
     else:
         cis = 0
 
-    impot      = calculate_tax(imposable, social_class)
-    net        = round(total - cotisations_totales - impot + cis - assurance_dependance, 2)
-    net_total  = round(net * duration, 2)
+    impot       = calculate_tax(total_imposable, social_class)
+    net_monthly = round(total_gross - total_cotisations - round_down(impot, 1)
+                        + cis - assurance_dependance, 2)
+    net_total   = round(net_monthly * duration, 2)
 
     return {
-        "avg_gross":              avg_gross,
-        "leave_type":             leave_type,
-        "leave_type_label":       config["label"],
-        "duration":               duration,
-        "cae_indemnity":          cae_indemnity,
-        "employer_salary":        employer_salary,
-        "total_month":            total,
-        "total_year":             total_year,
-        "assurance_maladie":      assurance_maladie,
-        "assurance_maladie_espece": assurance_maladie_espece,
-        "assurance_pension":      assurance_pension,
-        "cotisations_totales":    cotisations_totales,
-        "frais_deplacement":      round(frais_deplacement, 2),
-        "imposable":              imposable,
-        "assurance_dependance":   assurance_dependance,
-        "cis":                    cis,
-        "impot":                  round_down(impot, 1),
-        "net_monthly":            net,
-        "net_total":              net_total,
-        "ssm":                    PARENTAL_LEAVE_MIN,
-        "ssm_max":                PARENTAL_LEAVE_MAX,
+        "avg_gross":          avg_gross,
+        "leave_type":         leave_type,
+        "leave_type_label":   config["label"],
+        "duration":           duration,
+        # Employer table
+        "emp_gross":          emp_gross,
+        "emp_maladie":        emp_mal,
+        "emp_maladie_espece": emp_mal_e,
+        "emp_pension":        emp_pen,
+        "emp_cotisations":    emp_cot,
+        "emp_frais":          emp_frais,
+        "emp_imposable":      emp_imposable,
+        # CAE table
+        "cae_gross":          cae_gross,
+        "cae_maladie":        cae_mal,
+        "cae_maladie_espece": cae_mal_e,
+        "cae_pension":        cae_pen,
+        "cae_cotisations":    cae_cot,
+        "cae_imposable":      cae_imposable,
+        # Combined summary
+        "total_gross":        total_gross,
+        "total_cotisations":  total_cotisations,
+        "total_imposable":    total_imposable,
+        "assurance_dependance": assurance_dependance,
+        "cis":                cis,
+        "impot":              round_down(impot, 1),
+        "net_monthly":        net_monthly,
+        "net_total":          net_total,
+        # SSM reference
+        "ssm":                PARENTAL_LEAVE_MIN,
+        "ssm_max":            PARENTAL_LEAVE_MAX,
     }
 
 def calculate_salary(gross_salary, car_cost, residence, social_class):
