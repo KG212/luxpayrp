@@ -1,23 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}Parental Leave Calculator{% endblock %}
+{% block title %}Parental Leave — LuxPay{% endblock %}
 
 {% block content %}
-  <h2>Parental Leave Calculator</h2>
+<div class="card">
+  <h2>👶 Parental Leave Calculator</h2>
 
-  <p class="info-text">
+  <div class="info-text">
     The CAE (Caisse pour l'Avenir des Enfants) is treated as a separate employer.
-    The CAE indemnity is based on your average gross salary over the last 12 months,
+    Indemnity is based on your average gross salary over the last 12 months,
     capped between <strong>1× SSM (€ 2,703.74)</strong> and <strong>5/3× SSM (€ 4,506.23)</strong>.
-  </p>
+  </div>
 
   {% if error %}
     <div class="error">{{ error }}</div>
   {% endif %}
 
-  <form method="POST" class="form-grid">
+  <form method="POST" class="form-stack">
     <label>Average gross salary — last 12 months
       <input type="number" name="avg_gross" min="0.01" step="0.01"
+             placeholder="e.g. 4000"
              value="{{ request.form.avg_gross or '' }}" required>
     </label>
 
@@ -28,7 +30,7 @@
             {{ cfg.label }}
             {% if key == "full_time" %} — 4 or 6 months (contract suspended)
             {% elif key == "part_time_50" %} — 8 or 12 months
-            {% elif key == "part_time_25" %} — 16 or 20 months (employer agreement required)
+            {% elif key == "part_time_25" %} — 16 or 20 months (employer agreement)
             {% endif %}
           </option>
         {% endfor %}
@@ -58,84 +60,78 @@
       Twins or more (longer leave duration)
     </label>
 
-    <div></div>
-
-    <button type="submit">Calculate</button>
-    <button type="reset">Reset Form</button>
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">Calculate</button>
+      <button type="reset"  class="btn btn-secondary">Reset</button>
+    </div>
   </form>
+</div>
 
-  {% if result %}
-    <h3>Results — {{ result.leave_type_label }} ({{ result.duration }} months)</h3>
+{% if result %}
 
-    <div class="tables-wrapper">
+  <h3>Results — {{ result.leave_type_label }} ({{ result.duration }} months)</h3>
 
-      {# ── Employer table (hidden for full-time) ── #}
-      {% if result.leave_type != "full_time" %}
-      <div class="income-table">
-        <table>
-          <caption>Employer Salary</caption>
-          <tr><th>Item</th><th>Monthly</th></tr>
-          <tr><td>Gross salary ({{ ((1 - {"full_time":1,"part_time_50":0.5,"part_time_25":0.25}[result.leave_type]) * 100)|int }}%)</td>
-              <td>{{ result.emp_gross | currency }}</td></tr>
-          <tr class="section-divider"><td colspan="2"></td></tr>
-          <tr><td>Assurance maladie (2.80%)</td><td>- {{ result.emp_maladie | currency }}</td></tr>
-          <tr><td>Assurance maladie espèce (0.25%)</td><td>- {{ result.emp_maladie_espece | currency }}</td></tr>
-          <tr><td>Assurance pension (8.00%)</td><td>- {{ result.emp_pension | currency }}</td></tr>
-          <tr><td>Cotisations totales</td><td>- {{ result.emp_cotisations | currency }}</td></tr>
-          {% if result.emp_frais > 0 %}
-          <tr><td>Frais de déplacement</td><td>- {{ result.emp_frais | currency }}</td></tr>
-          {% endif %}
-          <tr class="highlight"><td><strong>Imposable</strong></td><td><strong>{{ result.emp_imposable | currency }}</strong></td></tr>
-        </table>
-      </div>
-      {% endif %}
+  <div class="tables-wrapper">
 
-      {# ── CAE table ── #}
-      <div class="income-table">
-        <table>
-          <caption>CAE Indemnity</caption>
-          <tr><th>Item</th><th>Monthly</th></tr>
-          <tr><td>CAE gross indemnity{% if result.leave_type != "full_time" %} ({{ ({"part_time_50":50,"part_time_25":25}[result.leave_type])|int }}% of base){% endif %}</td>
-              <td>{{ result.cae_gross | currency }}</td></tr>
-          <tr><td><small>Base clamped to [{{ result.ssm | currency }}, {{ result.ssm_max | currency }}]</small></td><td></td></tr>
-          <tr class="section-divider"><td colspan="2"></td></tr>
-          <tr><td>Assurance maladie (2.80%)</td><td>- {{ result.cae_maladie | currency }}</td></tr>
-          <tr><td>Assurance maladie espèce (0.25%)</td><td>- {{ result.cae_maladie_espece | currency }}</td></tr>
-          <tr><td>Assurance pension (8.00%)</td><td>- {{ result.cae_pension | currency }}</td></tr>
-          <tr><td>Cotisations totales</td><td>- {{ result.cae_cotisations | currency }}</td></tr>
-          <tr class="highlight"><td><strong>Imposable</strong></td><td><strong>{{ result.cae_imposable | currency }}</strong></td></tr>
-        </table>
-      </div>
+    {% if result.leave_type != "full_time" %}
+    <div class="income-table">
+      <table>
+        <caption>Employer Salary</caption>
+        <tr><th>Item</th><th>Monthly</th></tr>
+        <tr><td>Gross ({{ ((1 - {"full_time":1,"part_time_50":0.5,"part_time_25":0.25}[result.leave_type]) * 100)|int }}%)</td>
+            <td>{{ result.emp_gross | currency }}</td></tr>
+        <tr class="section-divider"><td colspan="2"></td></tr>
+        <tr><td>Maladie (2.80%)</td>        <td>− {{ result.emp_maladie | currency }}</td></tr>
+        <tr><td>Maladie espèce (0.25%)</td> <td>− {{ result.emp_maladie_espece | currency }}</td></tr>
+        <tr><td>Pension (8.00%)</td>         <td>− {{ result.emp_pension | currency }}</td></tr>
+        <tr><td>Cotisations totales</td>     <td>− {{ result.emp_cotisations | currency }}</td></tr>
+        {% if result.emp_frais > 0 %}
+        <tr><td>Frais déplacement</td>       <td>− {{ result.emp_frais | currency }}</td></tr>
+        {% endif %}
+        <tr class="highlight"><td><strong>Imposable</strong></td><td><strong>{{ result.emp_imposable | currency }}</strong></td></tr>
+      </table>
+    </div>
+    {% endif %}
 
-    </div>{# end tables-wrapper #}
+    <div class="income-table">
+      <table>
+        <caption>CAE Indemnity</caption>
+        <tr><th>Item</th><th>Monthly</th></tr>
+        <tr><td>Gross{% if result.leave_type != "full_time" %} ({{ ({"part_time_50":50,"part_time_25":25}[result.leave_type])|int }}%){% endif %}</td>
+            <td>{{ result.cae_gross | currency }}</td></tr>
+        <tr><td><small>Base: {{ result.ssm | currency }} – {{ result.ssm_max | currency }}</small></td><td></td></tr>
+        <tr class="section-divider"><td colspan="2"></td></tr>
+        <tr><td>Maladie (2.80%)</td>        <td>− {{ result.cae_maladie | currency }}</td></tr>
+        <tr><td>Maladie espèce (0.25%)</td> <td>− {{ result.cae_maladie_espece | currency }}</td></tr>
+        <tr><td>Pension (8.00%)</td>         <td>− {{ result.cae_pension | currency }}</td></tr>
+        <tr><td>Cotisations totales</td>     <td>− {{ result.cae_cotisations | currency }}</td></tr>
+        <tr class="highlight"><td><strong>Imposable</strong></td><td><strong>{{ result.cae_imposable | currency }}</strong></td></tr>
+      </table>
+    </div>
 
-    {# ── Combined summary ── #}
-    <h3>Combined Summary</h3>
+  </div>
+
+  <div class="card">
+    <h2>Combined Summary</h2>
     <table>
       <caption>Tax &amp; Net Income</caption>
       <tr><th>Item</th><th>Monthly</th></tr>
-      <tr><td>Total gross income</td><td>{{ result.total_gross | currency }}</td></tr>
-      <tr><td>Total cotisations</td><td>- {{ result.total_cotisations | currency }}</td></tr>
-      <tr><td>Total imposable</td><td>{{ result.total_imposable | currency }}</td></tr>
+      <tr><td>Total gross</td>              <td>{{ result.total_gross | currency }}</td></tr>
+      <tr><td>Total cotisations</td>        <td>− {{ result.total_cotisations | currency }}</td></tr>
+      <tr><td>Total imposable</td>          <td>{{ result.total_imposable | currency }}</td></tr>
       <tr class="section-divider"><td colspan="2"></td></tr>
-      <tr><td>Assurance dépendance (1.40%)</td><td>- {{ result.assurance_dependance | currency }}</td></tr>
-      <tr><td>CIS (crédit d'impôt)</td><td>+ {{ result.cis | currency }}</td></tr>
-      <tr><td>Impôt</td><td>- {{ result.impot | currency }}</td></tr>
+      <tr><td>Dépendance (1.40%)</td>       <td>− {{ result.assurance_dependance | currency }}</td></tr>
+      <tr><td>CIS (crédit d'impôt)</td>     <td>+ {{ result.cis | currency }}</td></tr>
+      <tr><td>Impôt</td>                    <td>− {{ result.impot | currency }}</td></tr>
       <tr class="section-divider"><td colspan="2"></td></tr>
-      <tr class="highlight">
-        <td><strong>Net monthly income</strong></td>
-        <td><strong>{{ result.net_monthly | currency }}</strong></td>
-      </tr>
-      <tr class="highlight">
-        <td><strong>Total net over {{ result.duration }} months</strong></td>
-        <td><strong>{{ result.net_total | currency }}</strong></td>
-      </tr>
+      <tr class="highlight"><td><strong>Net monthly</strong></td>                              <td><strong>{{ result.net_monthly | currency }}</strong></td></tr>
+      <tr class="highlight"><td><strong>Total net over {{ result.duration }} months</strong></td><td><strong>{{ result.net_total | currency }}</strong></td></tr>
     </table>
 
     <p class="info-text" style="margin-top:1rem;">
-      SSM floor: {{ result.ssm | currency }} &nbsp;|&nbsp;
-      CAE ceiling (5/3× SSM): {{ result.ssm_max | currency }}.
       Rates valid until next Luxembourg index adjustment (expected Q3 2026).
     </p>
-  {% endif %}
+  </div>
+
+{% endif %}
 {% endblock %}

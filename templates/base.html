@@ -8,18 +8,17 @@
 </head>
 <body>
 
-  <!-- Shared Menu -->
-  <div class="menu">
-    <h1>Welcome to LuxPay</h1>
-    <p>Select a calculator:</p>
-    <div class="buttons">
-      <a href="{{ url_for('salary') }}">💼 Salary Calculator</a>
-      <a href="{{ url_for('parental_leave') }}">👶 Parental Leave Calculator</a>
-      <a href="{{ url_for('creche') }}">🏡 Crèche Cost Calculator</a>
+  <nav class="nav">
+    <div class="nav-inner">
+      <span class="nav-title">🇱🇺 LuxPay</span>
+      <div class="nav-links">
+        <a href="{{ url_for('salary') }}"        {% if request.endpoint == 'salary' %}class="active"{% endif %}>💼 Salary</a>
+        <a href="{{ url_for('parental_leave') }}" {% if request.endpoint == 'parental_leave' %}class="active"{% endif %}>👶 Parental Leave</a>
+        <a href="{{ url_for('creche') }}"         {% if request.endpoint == 'creche' %}class="active"{% endif %}>🏡 Crèche</a>
+      </div>
     </div>
-  </div>
+  </nav>
 
-  <!-- Page-specific content -->
   <div class="content">
     {% block content %}{% endblock %}
   </div>
