@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template
-from salary_calc import (calculate_salary, calculate_parental_leave,
-                         TRAVEL_DEDUCTIONS, LEAVE_TYPES)
+from salary_calc import (calculate_salary, calculate_parental_leave, calculate_csa,
+                         TRAVEL_DEDUCTIONS, LEAVE_TYPES, SSM_NON_QUALIFIED)
 
 app = Flask(__name__)
 
@@ -68,9 +68,33 @@ def parental_leave():
                            leave_types=LEAVE_TYPES, social_classes=SOCIAL_CLASSES,
                            residences=RESIDENCES)
 
-@app.route("/creche")
+@app.route("/creche", methods=["GET", "POST"])
 def creche():
-    return render_template("creche.html")
+    result = None
+    error  = None
+    if request.method == "POST":
+        try:
+            revis          = request.form.get("revis") == "yes"
+            monthly_taxable = 0.0 if revis else float(request.form["monthly_taxable"])
+            n_children     = int(request.form["n_children"])
+            structure_type = request.form["structure_type"]
+            hours_per_week = float(request.form["hours_per_week"])
+            weeks_per_year = int(request.form.get("weeks_per_year", 46))
+            meals_per_week = int(request.form.get("meals_per_week", 0))
+
+            if not revis and monthly_taxable <= 0:
+                error = "Monthly taxable income must be a positive number."
+            elif hours_per_week <= 0 or hours_per_week > 60:
+                error = "Hours per week must be between 1 and 60."
+            elif weeks_per_year < 1 or weeks_per_year > 52:
+                error = "Weeks per year must be between 1 and 52."
+            else:
+                result = calculate_csa(monthly_taxable, n_children, structure_type,
+                                       hours_per_week, weeks_per_year, meals_per_week, revis)
+        except ValueError:
+            error = "Please check all numeric fields."
+    return render_template("creche.html", result=result, error=error,
+                           ssm=SSM_NON_QUALIFIED)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

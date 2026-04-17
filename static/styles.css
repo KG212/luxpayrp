@@ -326,6 +326,46 @@ tr.section-divider td {
   margin-top: 0.5rem;
 }
 
+/* ── Income bracket badge ─────────────────────────── */
+.income-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--brand-light);
+  border: 1.5px solid var(--brand);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.badge-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+}
+.badge-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--brand-dark);
+}
+
+/* ── CSA table row variants ───────────────────────── */
+tr.row-free td { background: #f0fdf4; color: #166534; }
+tr.row-warn td { background: #fffbeb; color: #92400e; font-size: 0.85rem; }
+
+.tag-free {
+  display: inline-block;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+}
+
 /* ── Responsive tweaks ────────────────────────────── */
 @media (max-width: 480px) {
   .nav-title { font-size: 1.1rem; }

@@ -231,3 +231,156 @@ def calculate_salary(gross_salary, car_cost, residence, social_class):
         "restant": restant,
         "restant_year": restant_year
     }
+
+
+# ─── CSA — Chèque-Service Accueil ────────────────────────────────────────────
+# Barème applicable from January 2026 (SSM index 968.04)
+
+CSA_STATE_MAX_SEA = 7.00   # € max state contribution / hour — SEA & Mini crèche
+CSA_STATE_MAX_AP  = 5.40   # € max state contribution / hour — Assistant parental
+
+# Each entry: list of 3 tranches → (cumulative_upper_hours, rate_ap, rate_sea)
+# Hours are per week; rate applies from previous upper + 1 through this upper.
+CSA_BAREME = {
+    # ─ REVIS / Situation de précarité ─
+    ("revis", 1): [(13, 0.00, 0.00), (21, 0.00, 0.00), (26, 0.50, 0.50)],
+    ("revis", 2): [(13, 0.00, 0.00), (21, 0.00, 0.00), (26, 0.30, 0.30)],
+    ("revis", 3): [(13, 0.00, 0.00), (21, 0.00, 0.00), (26, 0.15, 0.15)],
+    ("revis", 4): [(13, 0.00, 0.00), (21, 0.00, 0.00), (26, 0.00, 0.00)],
+    # ─ Revenu < 1.5× SSM ─
+    ("lt1.5", 1): [(13, 0.00, 0.00), (21, 0.50, 0.50), (26, 0.50, 0.50)],
+    ("lt1.5", 2): [(13, 0.00, 0.00), (21, 0.30, 0.30), (26, 0.30, 0.30)],
+    ("lt1.5", 3): [(13, 0.00, 0.00), (21, 0.15, 0.15), (26, 0.15, 0.15)],
+    ("lt1.5", 4): [(13, 0.00, 0.00), (21, 0.00, 0.00), (26, 0.00, 0.00)],
+    # ─ Revenu < 2× SSM ─
+    ("lt2",   1): [(13, 0.00, 0.00), (21, 1.00, 1.00), (26, 1.50, 1.50)],
+    ("lt2",   2): [(13, 0.00, 0.00), (21, 0.70, 0.70), (26, 1.10, 1.10)],
+    ("lt2",   3): [(13, 0.00, 0.00), (21, 0.35, 0.35), (26, 0.55, 0.55)],
+    ("lt2",   4): [(13, 0.00, 0.00), (21, 0.00, 0.00), (26, 0.00, 0.00)],
+    # ─ Revenu < 2.5× SSM ─
+    ("lt2.5", 1): [(8,  0.00, 0.00), (21, 1.50, 1.50), (31, 2.50, 2.50)],
+    ("lt2.5", 2): [(8,  0.00, 0.00), (21, 1.10, 1.10), (31, 1.80, 1.80)],
+    ("lt2.5", 3): [(8,  0.00, 0.00), (21, 0.55, 0.55), (31, 0.90, 0.90)],
+    ("lt2.5", 4): [(8,  0.00, 0.00), (21, 0.00, 0.00), (31, 0.00, 0.00)],
+    # ─ Revenu < 3× SSM ─
+    ("lt3",   1): [(8,  0.00, 0.00), (21, 2.00, 2.00), (31, 3.50, 3.50)],
+    ("lt3",   2): [(8,  0.00, 0.00), (21, 1.50, 1.50), (31, 2.60, 2.60)],
+    ("lt3",   3): [(8,  0.00, 0.00), (21, 0.75, 0.75), (31, 1.30, 1.30)],
+    ("lt3",   4): [(8,  0.00, 0.00), (21, 0.00, 0.00), (31, 0.00, 0.00)],
+    # ─ Revenu < 3.5× SSM ─
+    ("lt3.5", 1): [(3,  0.00, 0.00), (21, 2.50, 2.50), (36, 4.50, 4.50)],
+    ("lt3.5", 2): [(3,  0.00, 0.00), (21, 1.80, 1.80), (36, 3.30, 3.30)],
+    ("lt3.5", 3): [(3,  0.00, 0.00), (21, 0.90, 0.90), (36, 1.65, 1.65)],
+    ("lt3.5", 4): [(3,  0.00, 0.00), (21, 0.00, 0.00), (36, 0.00, 0.00)],
+    # ─ Revenu < 4× SSM ─
+    ("lt4",   1): [(3,  3.50, 3.50), (21, 3.50, 3.50), (36, 5.40, 5.50)],
+    ("lt4",   2): [(3,  2.70, 2.70), (21, 2.70, 2.70), (36, 4.10, 4.10)],
+    ("lt4",   3): [(3,  1.60, 1.60), (21, 1.60, 1.60), (36, 2.05, 2.05)],
+    ("lt4",   4): [(3,  0.00, 0.00), (21, 0.00, 0.00), (36, 0.00, 0.00)],
+    # ─ Revenu < 4.5× SSM ─
+    ("lt4.5", 1): [(3,  4.00, 4.00), (21, 4.00, 4.00), (36, 5.40, 6.00)],
+    ("lt4.5", 2): [(3,  3.20, 3.20), (21, 3.20, 3.20), (36, 4.80, 4.80)],
+    ("lt4.5", 3): [(3,  2.10, 2.10), (21, 2.10, 2.10), (36, 2.40, 2.40)],
+    ("lt4.5", 4): [(3,  0.00, 0.00), (21, 0.00, 0.00), (36, 0.00, 0.00)],
+    # ─ Revenu ≥ 4.5× SSM or no income declared ─
+    ("gte4.5",1): [(3,  4.00, 4.00), (21, 4.00, 4.00), (36, 5.40, 6.00)],
+    ("gte4.5",2): [(3,  3.20, 3.20), (21, 3.20, 3.20), (36, 5.40, 5.60)],
+    ("gte4.5",3): [(3,  2.10, 2.10), (21, 2.10, 2.10), (36, 2.80, 2.80)],
+    ("gte4.5",4): [(3,  0.00, 0.00), (21, 0.00, 0.00), (36, 0.00, 0.00)],
+}
+
+# Meal rate per meal for young (pre-school) children
+CSA_MEAL_RATE = {
+    "revis":  0.00, "lt1.5": 0.50, "lt2":  1.00, "lt2.5": 1.50,
+    "lt3":    2.00, "lt3.5": 2.00, "lt4":  2.00, "lt4.5": 2.00, "gte4.5": 2.00,
+}
+
+CSA_INCOME_LABELS = {
+    "revis":  "REVIS / Situation de précarité",
+    "lt1.5":  "Revenu < 1.5× SSM  (< € {:,.0f}/month)".format(1.5 * SSM_NON_QUALIFIED),
+    "lt2":    "Revenu < 2× SSM  (< € {:,.0f}/month)".format(2.0 * SSM_NON_QUALIFIED),
+    "lt2.5":  "Revenu < 2.5× SSM  (< € {:,.0f}/month)".format(2.5 * SSM_NON_QUALIFIED),
+    "lt3":    "Revenu < 3× SSM  (< € {:,.0f}/month)".format(3.0 * SSM_NON_QUALIFIED),
+    "lt3.5":  "Revenu < 3.5× SSM  (< € {:,.0f}/month)".format(3.5 * SSM_NON_QUALIFIED),
+    "lt4":    "Revenu < 4× SSM  (< € {:,.0f}/month)".format(4.0 * SSM_NON_QUALIFIED),
+    "lt4.5":  "Revenu < 4.5× SSM  (< € {:,.0f}/month)".format(4.5 * SSM_NON_QUALIFIED),
+    "gte4.5": "Revenu ≥ 4.5× SSM  (≥ € {:,.0f}/month)".format(4.5 * SSM_NON_QUALIFIED),
+}
+
+def get_csa_income_category(monthly_taxable, revis=False):
+    if revis:
+        return "revis"
+    s = SSM_NON_QUALIFIED
+    if monthly_taxable < 1.5 * s: return "lt1.5"
+    if monthly_taxable < 2.0 * s: return "lt2"
+    if monthly_taxable < 2.5 * s: return "lt2.5"
+    if monthly_taxable < 3.0 * s: return "lt3"
+    if monthly_taxable < 3.5 * s: return "lt3.5"
+    if monthly_taxable < 4.0 * s: return "lt4"
+    if monthly_taxable < 4.5 * s: return "lt4.5"
+    return "gte4.5"
+
+def calculate_csa(monthly_taxable, n_children, structure_type, hours_per_week,
+                  weeks_per_year=46, meals_per_week=0, revis=False):
+    income_cat = get_csa_income_category(monthly_taxable, revis)
+    child_key  = min(n_children, 4)
+    tranches   = CSA_BAREME[(income_cat, child_key)]
+    state_rate = CSA_STATE_MAX_SEA if structure_type == "sea" else CSA_STATE_MAX_AP
+
+    # Cost per week — break down by tranche
+    tranche_details   = []
+    total_parent_week = 0.0
+    prev_upper        = 0
+
+    for i, (upper, rate_ap, rate_sea) in enumerate(tranches):
+        rate            = rate_ap if structure_type == "ap" else rate_sea
+        hours_in_tranche = max(0, min(hours_per_week, upper) - prev_upper)
+        parent_cost     = round(hours_in_tranche * rate, 2)
+        tranche_details.append({
+            "label":    f"Tranche {i + 1}",
+            "range":    f"{prev_upper + 1}–{upper} h/week",
+            "hours":    hours_in_tranche,
+            "rate":     rate,
+            "cost":     parent_cost,
+            "is_free":  rate == 0.0,
+        })
+        total_parent_week += parent_cost
+        prev_upper = upper
+
+    t3_max             = tranches[-1][0]
+    unsubsidized_hours = max(0, hours_per_week - t3_max)
+    covered_hours      = min(hours_per_week, t3_max)
+
+    # Meals
+    meal_rate          = CSA_MEAL_RATE.get(income_cat, 0.0)
+    meal_cost_week     = round(meals_per_week * meal_rate, 2)
+
+    total_parent_week  = round(total_parent_week, 2)
+    wk_factor          = weeks_per_year / 12
+    total_parent_month = round((total_parent_week + meal_cost_week) * wk_factor, 2)
+    total_parent_year  = round((total_parent_week + meal_cost_week) * weeks_per_year, 2)
+
+    # State max contribution estimate (for informational display)
+    state_week         = round(covered_hours * state_rate, 2)
+    state_month        = round(state_week * wk_factor, 2)
+
+    return {
+        "income_cat":           income_cat,
+        "income_cat_label":     CSA_INCOME_LABELS[income_cat],
+        "structure_type":       structure_type,
+        "hours_per_week":       hours_per_week,
+        "t3_max_hours":         t3_max,
+        "unsubsidized_hours":   unsubsidized_hours,
+        "tranche_details":      tranche_details,
+        "total_parent_week":    total_parent_week,
+        "meals_per_week":       meals_per_week,
+        "meal_rate":            meal_rate,
+        "meal_cost_week":       meal_cost_week,
+        "total_parent_month":   total_parent_month,
+        "total_parent_year":    total_parent_year,
+        "state_rate_per_hour":  state_rate,
+        "state_week":           state_week,
+        "state_month":          state_month,
+        "weeks_per_year":       weeks_per_year,
+        "ssm":                  SSM_NON_QUALIFIED,
+    }
