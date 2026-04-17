@@ -114,3 +114,8 @@ caption {
   font-weight: bold;
   margin-bottom: 0.5rem;
 }
+
+tr.highlight td {
+  background-color: #e6f4f7;
+  color: #1a6070;
+}

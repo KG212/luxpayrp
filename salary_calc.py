@@ -28,8 +28,8 @@ TRAVEL_DEDUCTIONS = {
     "Reckange-sur-Mess": 99*(13-4)/12, "Redange/Attert": 99*(12-4)/12, "Roeser": 99*(20-4)/12,
     "Rumelange": 99*(24-4)/12, "Saeul": 99*(7-4)/12, "Sandweiler": 99*(20-4)/12,
     "Sanem": 99*(14-4)/12, "Schieren": 99*(21-4)/12, "Schifflange": 99*(19-4)/12,
-    "Schuttrange": 99*(24-4)/12, "Steinfort": 99*(3-4)/12, "Steinsel": 99*(13-4)/12,
-    "Strassen": 99*(10-4)/12, "Useldange": 99*(11-4)/12, "Vallée de l’Ernz": 99*(25-4)/12,
+    "Schuttrange": 99*(24-4)/12, "Steinfort": max(0, 99*(3-4)/12), "Steinsel": 99*(13-4)/12,
+    "Strassen": 99*(10-4)/12, "Useldange": 99*(11-4)/12, "Vallée de l'Ernz": 99*(25-4)/12,
     "Vichten": 99*(15-4)/12, "Wahl": 99*(19-4)/12, "Waldbillig": 99*(28-4)/12,
     "Waldbredimus": 99*(27-4)/12, "Walferdange": 99*(13-4)/12, "Weiler-la-Tour": 99*(23-4)/12
 }
@@ -41,8 +41,8 @@ TAX_BRACKETS = {
     "Classe 1": [
         (0, 1185, 0, 0, 1.07),(1190, 1370, 0.08, -95, 1.07),
         (1375, 1555, 0.09, -108.7125, 1.07),(1560, 1735, 0.1, -124.26250, 1.07),
-        (1740, 1920, 0.11, -141.65,000, 1.07),(1925, 2105, 0.12, -160.87500, 1.07),
-        (2110, 2295, 0.14, -203.00,000, 1.07),(2300, 2485, 0.16, -248.95000, 1.07),
+        (1740, 1920, 0.11, -141.650, 1.07),(1925, 2105, 0.12, -160.87500, 1.07),
+        (2110, 2295, 0.14, -203.000, 1.07),(2300, 2485, 0.16, -248.95000, 1.07),
         (2490, 2680, 0.18, -298.72500, 1.07),(2685, 2870, 0.2, -352.32500, 1.07),
         (2875, 3060, 0.22, -409.75000, 1.07),(3065, 3250, 0.24, -471.00000, 1.07),
         (3255, 3445, 0.26, -536.07500, 1.07),(3450, 3635, 0.28, -604.97500, 1.07),
@@ -54,13 +54,13 @@ TAX_BRACKETS = {
     ],
     "Classe 1A": [
         (0, 2290, 0.0000, -0.00000, 1.07),(2295, 2435, 0.1000, -229.00000, 1.07),
-        (2440, 2580, 0.1125, -259,46250, 1.07),(2585, 2730, 0.1250, -291.76250, 1.07),
-        (2735, 2875, 0.1375, -325,90000, 1.07),(2880, 3025, 0.1500, -361.87500, 1.07),
-        (3030, 3175, 0.1750, -437,50000, 1.07),(3180, 3330, 0.2000, -516.95000, 1.07),
-        (3335, 3480, 0.2250, -600,22500, 1.07),(3485, 3635, 0.2500, -687.32500, 1.07),
-        (3640, 3790, 0.2750, -778,25000, 1.07),(3795, 3940, 0.3000, -873.00000, 1.07),
-        (3945, 4095, 0.3250, -971,57500, 1.07),(4100, 4245, 0.3500, -1073.97500, 1.07),
-        (4250, 4400, 0.3750, -1180,20000, 1.07),(4405, 9870, 0.3900, -1246.23000, 1.07),
+        (2440, 2580, 0.1125, -259.46250, 1.07),(2585, 2730, 0.1250, -291.76250, 1.07),
+        (2735, 2875, 0.1375, -325.90000, 1.07),(2880, 3025, 0.1500, -361.87500, 1.07),
+        (3030, 3175, 0.1750, -437.50000, 1.07),(3180, 3330, 0.2000, -516.95000, 1.07),
+        (3335, 3480, 0.2250, -600.22500, 1.07),(3485, 3635, 0.2500, -687.32500, 1.07),
+        (3640, 3790, 0.2750, -778.25000, 1.07),(3795, 3940, 0.3000, -873.00000, 1.07),
+        (3945, 4095, 0.3250, -971.57500, 1.07),(4100, 4245, 0.3500, -1073.97500, 1.07),
+        (4250, 4400, 0.3750, -1180.20000, 1.07),(4405, 9870, 0.3900, -1246.23000, 1.07),
         (9875, 14765, 0.40, -1344.95500, 1.07),(14770, 19655, 0.4100, -1492.60500, 1.07),
         (19660, 9999999, 0.42, -1689.18000, 1.07)
     ],
@@ -81,10 +81,12 @@ TAX_BRACKETS = {
 }
 
 def calculate_tax(imposable, social_class):
+    # Round to nearest 5 first — tax brackets are defined in 5-euro steps
+    taxable = myround(imposable, base=5)
     brackets = TAX_BRACKETS.get(social_class, [])
     for lower, upper, rate, deduction, multiplier in brackets:
-        if lower <= imposable <= upper:
-            return (myround(imposable, base=5) * rate + deduction) * multiplier
+        if lower <= taxable <= upper:
+            return (taxable * rate + deduction) * multiplier
     return 0.0
 
 def calculate_salary(gross_salary, car_cost, residence, social_class):
@@ -101,7 +103,7 @@ def calculate_salary(gross_salary, car_cost, residence, social_class):
     assurance_dependance = round((total - 535) * 0.014, 2)
 
     if total_year < 40000:
-        cis = 600
+        cis = round(600 / 12, 2)   # €600/year = €50/month
     elif total_year < 80000:
         cis = round((600 - (total_year - 40000) * 0.015) / 12, 2)
     else:
@@ -123,7 +125,7 @@ def calculate_salary(gross_salary, car_cost, residence, social_class):
         "assurance_maladie_espece": assurance_maladie_espece,
         "assurance_pension": assurance_pension,
         "cotisations_totales": cotisations_totales,
-        "frais_deplacement": frais_deplacement,
+        "frais_deplacement": round(frais_deplacement, 2),
         "imposable": imposable,
         "assurance_dependance": assurance_dependance,
         "cis": cis,

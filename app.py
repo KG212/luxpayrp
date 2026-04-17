@@ -3,6 +3,10 @@ from salary_calc import calculate_salary, TRAVEL_DEDUCTIONS
 
 app = Flask(__name__)
 
+@app.template_filter("currency")
+def currency_filter(value):
+    return f"€ {value:,.2f}"
+
 SOCIAL_CLASSES = ["Classe 1", "Classe 1A", "Classe 2"]
 RESIDENCES = ["Select"] + list(TRAVEL_DEDUCTIONS.keys())
 
@@ -20,7 +24,11 @@ def salary():
             car = float(request.form["car_cost"])
             residence = request.form["residence"]
             social_class = request.form["social_class"]
-            if social_class not in SOCIAL_CLASSES:
+            if gross <= 0:
+                error = "Gross salary must be a positive number."
+            elif car < 0:
+                error = "Car benefit cannot be negative."
+            elif social_class not in SOCIAL_CLASSES:
                 error = "Please select a valid social class."
             elif residence not in TRAVEL_DEDUCTIONS:
                 error = "Please select a valid residence."
