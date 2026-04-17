@@ -3,9 +3,118 @@
 {% block title %}Parental Leave Calculator{% endblock %}
 
 {% block content %}
-  <div class="container">
-    <h2>Parental Leave Calculator</h2>
-    <p>This feature is coming soon. Stay tuned!</p>
-    <a href="{{ url_for('home') }}">← Back to Home</a>
-  </div>
+  <h2>Parental Leave Calculator</h2>
+
+  <p class="info-text">
+    The CAE (Caisse pour l'Avenir des Enfants) pays an indemnity based on your average
+    gross salary over the last 12 months, capped between
+    <strong>1× SSM ({{ result.ssm | currency if result else "€ 2,703.74" }})</strong>
+    and <strong>5× SSM ({{ result.ssm_max | currency if result else "€ 13,518.70" }})</strong>.
+  </p>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <form method="POST" class="form-grid">
+    <label>Average gross salary — last 12 months
+      <input type="number" name="avg_gross" min="0.01" step="0.01"
+             value="{{ request.form.avg_gross or '' }}" required>
+    </label>
+
+    <label>Leave type
+      <select name="leave_type" required>
+        {% for key, cfg in leave_types.items() %}
+          <option value="{{ key }}"
+            {% if request.form.leave_type == key %}selected{% endif %}>
+            {{ cfg.label }}
+            {% if key == "full_time" %} — 4 or 6 months
+            {% elif key == "part_time_50" %} — 8 or 12 months
+            {% elif key == "part_time_25" %} — 16 or 20 months (employer agreement required)
+            {% endif %}
+          </option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>Social class
+      <select name="social_class" required>
+        {% for sc in social_classes %}
+          <option value="{{ sc }}" {% if request.form.social_class == sc %}selected{% endif %}>{{ sc }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>Residence
+      <select name="residence" required>
+        {% for city in residences %}
+          <option value="{{ city }}" {% if request.form.residence == city %}selected{% endif %}>{{ city }}</option>
+        {% endfor %}
+      </select>
+      <small>Used for travel deduction on part-time leave only.</small>
+    </label>
+
+    <label class="checkbox-label">
+      <input type="checkbox" name="twins" value="yes"
+             {% if request.form.twins == "yes" %}checked{% endif %}>
+      Twins or more (longer leave duration)
+    </label>
+
+    <div></div><!-- grid spacer -->
+
+    <button type="submit">Calculate</button>
+    <button type="reset">Reset Form</button>
+  </form>
+
+  {% if result %}
+    <h3>Results — {{ result.leave_type_label }} ({{ result.duration }} months)</h3>
+
+    <table>
+      <caption>Parental Leave Income Breakdown</caption>
+      <tr><th>Item</th><th>Monthly</th></tr>
+
+      <tr><td>Your average gross salary</td><td>{{ result.avg_gross | currency }}</td></tr>
+
+      {% if result.leave_type != "full_time" %}
+      <tr><td>Employer salary ({{ (1 - {"full_time":1,"part_time_50":0.5,"part_time_25":0.25}[result.leave_type]) * 100 | int }}% of gross)</td>
+          <td>{{ result.employer_salary | currency }}</td></tr>
+      {% endif %}
+
+      <tr><td>CAE indemnity (gross)</td><td>{{ result.cae_indemnity | currency }}</td></tr>
+      <tr><td>Total gross income</td><td>{{ result.total_month | currency }}</td></tr>
+
+      <tr class="section-divider"><td colspan="2"></td></tr>
+
+      <tr><td>Assurance maladie (2.80%)</td><td>- {{ result.assurance_maladie | currency }}</td></tr>
+      <tr><td>Assurance maladie espèce (0.25%)</td><td>- {{ result.assurance_maladie_espece | currency }}</td></tr>
+      <tr><td>Assurance pension (8.00%)</td><td>- {{ result.assurance_pension | currency }}</td></tr>
+      <tr><td>Cotisations totales</td><td>- {{ result.cotisations_totales | currency }}</td></tr>
+
+      {% if result.leave_type != "full_time" and result.frais_deplacement > 0 %}
+      <tr><td>Frais de déplacement</td><td>- {{ result.frais_deplacement | currency }}</td></tr>
+      {% endif %}
+
+      <tr><td>Revenu imposable</td><td>{{ result.imposable | currency }}</td></tr>
+      <tr><td>Assurance dépendance (1.40%)</td><td>- {{ result.assurance_dependance | currency }}</td></tr>
+      <tr><td>CIS (crédit d'impôt)</td><td>+ {{ result.cis | currency }}</td></tr>
+      <tr><td>Impôt</td><td>- {{ result.impot | currency }}</td></tr>
+
+      <tr class="section-divider"><td colspan="2"></td></tr>
+
+      <tr class="highlight">
+        <td><strong>Net monthly income</strong></td>
+        <td><strong>{{ result.net_monthly | currency }}</strong></td>
+      </tr>
+      <tr class="highlight">
+        <td><strong>Total net over {{ result.duration }} months</strong></td>
+        <td><strong>{{ result.net_total | currency }}</strong></td>
+      </tr>
+    </table>
+
+    <p class="info-text" style="margin-top:1rem;">
+      SSM floor applied: {{ result.ssm | currency }} &nbsp;|&nbsp;
+      SSM ceiling applied: {{ result.ssm_max | currency }}
+      (rates valid until next Luxembourg index adjustment, expected Q3 2026).
+    </p>
+  {% endif %}
 {% endblock %}

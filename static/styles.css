@@ -119,3 +119,26 @@ tr.highlight td {
   background-color: #e6f4f7;
   color: #1a6070;
 }
+
+tr.section-divider td {
+  border: none;
+  padding: 4px 0;
+}
+
+.checkbox-label {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.info-text {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 1.25rem;
+}
+
+label small {
+  color: #888;
+  font-size: 0.8rem;
+  margin-top: 2px;
+}

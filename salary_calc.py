@@ -89,6 +89,80 @@ def calculate_tax(imposable, social_class):
             return (taxable * rate + deduction) * multiplier
     return 0.0
 
+# SSM as of 1 January 2026 (index 968.04) — update on next indexation
+SSM_NON_QUALIFIED = 2703.74
+PARENTAL_LEAVE_MIN = SSM_NON_QUALIFIED          # 1× SSM
+PARENTAL_LEAVE_MAX = SSM_NON_QUALIFIED * 5      # 5× SSM = 13 518.70
+
+LEAVE_TYPES = {
+    "full_time":    {"label": "Full-time",    "reduction": 1.00, "duration_single": 4,  "duration_twins": 6},
+    "part_time_50": {"label": "Part-time 50%","reduction": 0.50, "duration_single": 8,  "duration_twins": 12},
+    "part_time_25": {"label": "Part-time 25%","reduction": 0.25, "duration_single": 16, "duration_twins": 20},
+}
+
+def calculate_parental_leave(avg_gross, leave_type, twins, social_class, residence):
+    config = LEAVE_TYPES[leave_type]
+    reduction = config["reduction"]
+    duration = config["duration_twins"] if twins else config["duration_single"]
+
+    # CAE indemnity: average salary clamped to [SSM, 5×SSM] × reduction rate
+    base = max(PARENTAL_LEAVE_MIN, min(avg_gross, PARENTAL_LEAVE_MAX))
+    cae_indemnity = round(base * reduction, 2)
+
+    if leave_type == "full_time":
+        employer_salary = 0.0
+        total = cae_indemnity
+        frais_deplacement = 0.0          # not commuting during full-time leave
+    else:
+        employer_salary = round(avg_gross * (1 - reduction), 2)
+        total = round(employer_salary + cae_indemnity, 2)
+        frais_deplacement = get_travel_deduction(residence)
+
+    total_year = total * 12
+
+    assurance_maladie         = round(total * 0.028, 2)
+    assurance_maladie_espece  = round(total * 0.0025, 2)
+    assurance_pension         = round(total * 0.08, 2)
+    cotisations_totales       = round(assurance_maladie + assurance_maladie_espece + assurance_pension, 2)
+
+    imposable            = round(total - cotisations_totales - frais_deplacement, 2)
+    assurance_dependance = round((total - 535) * 0.014, 2)
+
+    if total_year < 40000:
+        cis = round(600 / 12, 2)
+    elif total_year < 80000:
+        cis = round((600 - (total_year - 40000) * 0.015) / 12, 2)
+    else:
+        cis = 0
+
+    impot      = calculate_tax(imposable, social_class)
+    net        = round(total - cotisations_totales - impot + cis - assurance_dependance, 2)
+    net_total  = round(net * duration, 2)
+
+    return {
+        "avg_gross":              avg_gross,
+        "leave_type":             leave_type,
+        "leave_type_label":       config["label"],
+        "duration":               duration,
+        "cae_indemnity":          cae_indemnity,
+        "employer_salary":        employer_salary,
+        "total_month":            total,
+        "total_year":             total_year,
+        "assurance_maladie":      assurance_maladie,
+        "assurance_maladie_espece": assurance_maladie_espece,
+        "assurance_pension":      assurance_pension,
+        "cotisations_totales":    cotisations_totales,
+        "frais_deplacement":      round(frais_deplacement, 2),
+        "imposable":              imposable,
+        "assurance_dependance":   assurance_dependance,
+        "cis":                    cis,
+        "impot":                  round_down(impot, 1),
+        "net_monthly":            net,
+        "net_total":              net_total,
+        "ssm":                    PARENTAL_LEAVE_MIN,
+        "ssm_max":                PARENTAL_LEAVE_MAX,
+    }
+
 def calculate_salary(gross_salary, car_cost, residence, social_class):
     total = gross_salary + car_cost
     total_year = total * 12
