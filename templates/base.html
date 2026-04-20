@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}LuxPay{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+  <!-- ═══════════════════════════════════════════════════
+       GOOGLE ADSENSE — Step 1: paste your publisher script here
+       Replace ca-pub-XXXXXXXXXXXXXXXX with your Publisher ID
+  ════════════════════════════════════════════════════════
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+          crossorigin="anonymous"></script>
+  ═══════════════════════════════════════════════════════ -->
 </head>
 <body>
 
@@ -19,8 +27,41 @@
     </div>
   </nav>
 
+  <!-- ── Ad slot: Leaderboard (top of every page) ───────────────────── -->
+  <div class="ad-slot ad-slot--leaderboard">
+    <!-- ═══════════════════════════════════════════════════
+         GOOGLE ADSENSE — Step 2: paste your leaderboard ad unit here
+         Replace data-ad-client and data-ad-slot with your values
+    ════════════════════════════════════════════════════════
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="XXXXXXXXXX"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    ═══════════════════════════════════════════════════════ -->
+    <span class="ad-placeholder-label">Advertisement</span>
+  </div>
+
   <div class="content">
     {% block content %}{% endblock %}
+  </div>
+
+  <!-- ── Ad slot: Footer banner (bottom of every page) ─────────────── -->
+  <div class="ad-slot ad-slot--footer">
+    <!-- ═══════════════════════════════════════════════════
+         GOOGLE ADSENSE — Step 3: paste your footer ad unit here
+    ════════════════════════════════════════════════════════
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="XXXXXXXXXX"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    ═══════════════════════════════════════════════════════ -->
+    <span class="ad-placeholder-label">Advertisement</span>
   </div>
 
 </body>

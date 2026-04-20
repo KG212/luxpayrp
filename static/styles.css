@@ -326,6 +326,51 @@ tr.section-divider td {
   margin-top: 0.5rem;
 }
 
+/* ── Ad slots ─────────────────────────────────────── */
+.ad-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f8f8;
+  border: 1px dashed #d1d5db;
+  color: #9ca3af;
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  overflow: hidden;
+  /* Remove border/background once real ads are live */
+}
+
+.ad-placeholder-label {
+  /* Shown only while ad slot is empty — hide once AdSense <ins> is active */
+  pointer-events: none;
+}
+
+.ad-slot--leaderboard {
+  width: 100%;
+  min-height: 90px;    /* Leaderboard: 728×90, collapses to 320×50 on mobile */
+  margin-bottom: 0;
+}
+
+.ad-slot--rectangle {
+  max-width: 720px;
+  margin: 0 auto 1.5rem;
+  min-height: 250px;   /* Medium rectangle 300×250 */
+  border-radius: var(--radius);
+}
+
+.ad-slot--footer {
+  width: 100%;
+  min-height: 90px;
+  margin-top: 2rem;
+}
+
+@media (max-width: 480px) {
+  .ad-slot--leaderboard,
+  .ad-slot--footer  { min-height: 50px; }  /* Mobile banner 320×50 */
+  .ad-slot--rectangle { min-height: 200px; }
+}
+
 /* ── Income bracket badge ─────────────────────────── */
 .income-badge {
   display: flex;
