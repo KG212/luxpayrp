@@ -411,6 +411,36 @@ tr.row-warn td { background: #fffbeb; color: #92400e; font-size: 0.85rem; }
   border-radius: 4px;
 }
 
+/* ── Language switcher ────────────────────────────── */
+.lang-switcher {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.lang-btn {
+  color: rgba(255,255,255,0.75);
+  background: rgba(255,255,255,0.12);
+  text-decoration: none;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: background 0.15s, color 0.15s;
+  border: 1.5px solid transparent;
+}
+
+.lang-btn:hover {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+}
+
+.lang-btn.lang-active {
+  background: rgba(255,255,255,0.28);
+  color: #fff;
+  border-color: rgba(255,255,255,0.5);
+}
+
 /* ── Responsive tweaks ────────────────────────────── */
 @media (max-width: 480px) {
   .nav-title { font-size: 1.1rem; }

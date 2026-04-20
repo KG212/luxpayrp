@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,9 +20,13 @@
     <div class="nav-inner">
       <span class="nav-title">🇱🇺 LuxPay</span>
       <div class="nav-links">
-        <a href="{{ url_for('salary') }}"        {% if request.endpoint == 'salary' %}class="active"{% endif %}>💼 Salary</a>
-        <a href="{{ url_for('parental_leave') }}" {% if request.endpoint == 'parental_leave' %}class="active"{% endif %}>👶 Parental Leave</a>
-        <a href="{{ url_for('creche') }}"         {% if request.endpoint == 'creche' %}class="active"{% endif %}>🏡 Crèche</a>
+        <a href="{{ url_for('salary') }}"         {% if request.endpoint == 'salary' %}class="active"{% endif %}>💼 {{ t.nav_salary }}</a>
+        <a href="{{ url_for('parental_leave') }}"  {% if request.endpoint == 'parental_leave' %}class="active"{% endif %}>👶 {{ t.nav_parental }}</a>
+        <a href="{{ url_for('creche') }}"          {% if request.endpoint == 'creche' %}class="active"{% endif %}>🏡 {{ t.nav_creche }}</a>
+      </div>
+      <div class="lang-switcher">
+        <a href="{{ url_for('set_lang', lang='en') }}" class="lang-btn{% if lang == 'en' %} lang-active{% endif %}">EN</a>
+        <a href="{{ url_for('set_lang', lang='fr') }}" class="lang-btn{% if lang == 'fr' %} lang-active{% endif %}">FR</a>
       </div>
     </div>
   </nav>
@@ -41,7 +45,7 @@
          data-full-width-responsive="true"></ins>
     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     ═══════════════════════════════════════════════════════ -->
-    <span class="ad-placeholder-label">Advertisement</span>
+    <span class="ad-placeholder-label">{{ t.advertisement }}</span>
   </div>
 
   <div class="content">
@@ -61,7 +65,7 @@
          data-full-width-responsive="true"></ins>
     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     ═══════════════════════════════════════════════════════ -->
-    <span class="ad-placeholder-label">Advertisement</span>
+    <span class="ad-placeholder-label">{{ t.advertisement }}</span>
   </div>
 
 </body>

@@ -1,20 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Crèche Cost Calculator — LuxPay{% endblock %}
+{% block title %}{{ t.creche_title }} — LuxPay{% endblock %}
 
 {% block content %}
 <div class="card">
-  <h2>🏡 Crèche Cost Calculator</h2>
+  <h2>{{ t.creche_title }}</h2>
 
-  <div class="info-text">
-    Based on the official 2026 CSA barème (Chèque-Service Accueil).
-    Use your household's <strong>monthly taxable income</strong> (revenu imposable mensuel).
-    The state pays up to <strong>€ 7.00/h</strong> (SEA/crèche) or <strong>€ 5.40/h</strong>
-    (assistant parental) directly to the structure.
-  </div>
+  <div class="info-text">{{ t.creche_info | safe }}</div>
 
-  {% if error %}
-    <div class="error">{{ error }}</div>
+  {% if error_key %}
+    <div class="error">{{ t[error_key] }}</div>
   {% endif %}
 
   <form method="POST" class="form-stack">
@@ -23,59 +18,59 @@
       <input type="checkbox" name="revis" value="yes" id="revis-check"
              {% if request.form.revis == "yes" %}checked{% endif %}
              onchange="document.getElementById('income-field').style.display = this.checked ? 'none' : 'flex'">
-      REVIS or social exclusion situation (automatically lowest bracket)
+      {{ t.creche_revis }}
     </label>
 
     <label id="income-field" {% if request.form.revis == "yes" %}style="display:none"{% endif %}>
-      Monthly household taxable income (€)
+      {{ t.creche_income }}
       <input type="number" name="monthly_taxable" min="0" step="1"
-             placeholder="e.g. 4500"
+             placeholder="{{ t.creche_income_ph }}"
              value="{{ request.form.monthly_taxable or '' }}">
-      <small>SSM 2026 = € {{ "{:,.2f}".format(ssm) }}/month — rates valid until next index adjustment (expected Q3 2026)</small>
+      <small>{{ t.creche_income_note.replace('{ssm}', "{:,.2f}".format(ssm)) }}</small>
     </label>
 
-    <label>Number of children in household (receiving family allowances)
+    <label>{{ t.creche_children }}
       <select name="n_children" required>
-        {% for n, label in [(1,"1 child"),(2,"2 children"),(3,"3 children"),(4,"4 or more")] %}
-          <option value="{{ n }}" {% if request.form.n_children == n|string %}selected{% endif %}>{{ label }}</option>
+        {% for n, key in [(1,"child_1"),(2,"child_2"),(3,"child_3"),(4,"child_4")] %}
+          <option value="{{ n }}" {% if request.form.n_children == n|string %}selected{% endif %}>{{ t[key] }}</option>
         {% endfor %}
       </select>
     </label>
 
-    <label>Structure type
+    <label>{{ t.creche_structure }}
       <select name="structure_type" required>
-        <option value="sea" {% if request.form.structure_type != "ap" %}selected{% endif %}>SEA / Crèche / Mini crèche — state pays up to € 7.00/h</option>
-        <option value="ap"  {% if request.form.structure_type == "ap" %}selected{% endif %}>Assistant parental (AP) — state pays up to € 5.40/h</option>
+        <option value="sea" {% if request.form.structure_type != "ap" %}selected{% endif %}>{{ t.creche_sea }}</option>
+        <option value="ap"  {% if request.form.structure_type == "ap" %}selected{% endif %}>{{ t.creche_ap }}</option>
       </select>
     </label>
 
-    <label>Hours enrolled per week
+    <label>{{ t.creche_hours }}
       <input type="number" name="hours_per_week" min="1" max="60" step="0.5"
              placeholder="e.g. 40"
              value="{{ request.form.hours_per_week or '' }}" required>
-      <small>Max 60 h/week covered by the state. Barème covers up to 26–36 h/week depending on income.</small>
+      <small>{{ t.creche_hours_note }}</small>
     </label>
 
-    <label>Weeks per year
+    <label>{{ t.creche_weeks }}
       <input type="number" name="weeks_per_year" min="1" max="52" step="1"
              value="{{ request.form.weeks_per_year or '46' }}" required>
-      <small>Standard: 46 weeks for pre-school children.</small>
+      <small>{{ t.creche_weeks_note }}</small>
     </label>
 
-    <label>Meals per week (young / pre-school child)
+    <label>{{ t.creche_meals }}
       <select name="meals_per_week">
         {% for n in range(6) %}
           <option value="{{ n }}" {% if (request.form.meals_per_week or "0") == n|string %}selected{% endif %}>
-            {{ n }} meal{{ "s" if n != 1 else "" }}{% if n == 5 %} (full week){% endif %}
+            {{ n }}{% if n == 5 %} (full week){% endif %}
           </option>
         {% endfor %}
       </select>
-      <small>School-age children: meals are free during school term.</small>
+      <small>{{ t.creche_meals_note }}</small>
     </label>
 
     <div class="btn-row">
-      <button type="submit" class="btn btn-primary">Calculate</button>
-      <button type="reset"  class="btn btn-secondary" onclick="document.getElementById('income-field').style.display='flex'">Reset</button>
+      <button type="submit" class="btn btn-primary">{{ t.btn_calculate }}</button>
+      <button type="reset"  class="btn btn-secondary" onclick="document.getElementById('income-field').style.display='flex'">{{ t.btn_reset }}</button>
     </div>
   </form>
 </div>
@@ -95,78 +90,78 @@
        data-full-width-responsive="true"></ins>
   <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
   ═══════════════════════════════════════════════════════ -->
-  <span class="ad-placeholder-label">Advertisement</span>
+  <span class="ad-placeholder-label">{{ t.advertisement }}</span>
 </div>
 
 <div class="card">
-  <h2>Results</h2>
+  <h2>{{ t.label_results }}</h2>
 
   <div class="income-badge">
-    <span class="badge-label">Income bracket</span>
+    <span class="badge-label">{{ t.creche_bracket }}</span>
     <span class="badge-value">{{ result.income_cat_label }}</span>
   </div>
 
-  <h3>Hourly breakdown — {{ result.hours_per_week }} h/week</h3>
+  <h3>{{ t.creche_breakdown }} — {{ result.hours_per_week }} h/week</h3>
   <table>
-    <caption>Parental contribution per tranche ({{ "SEA / Crèche" if result.structure_type == "sea" else "Assistant parental" }})</caption>
-    <tr><th>Tranche</th><th>Hours</th><th>Hours used</th><th>Rate /h</th><th>Parent cost/week</th></tr>
-    {% for t in result.tranche_details %}
-    <tr {% if t.is_free %}class="row-free"{% endif %}>
-      <td>{{ t.label }}</td>
-      <td>{{ t.range }}</td>
-      <td>{{ t.hours }} h</td>
-      <td>{% if t.is_free %}<span class="tag-free">FREE</span>{% else %}€ {{ "%.2f"|format(t.rate) }}{% endif %}</td>
-      <td>{% if t.is_free %}€ 0.00{% else %}{{ t.cost | currency }}{% endif %}</td>
+    <caption>{{ t.creche_breakdown }} ({{ t.creche_sea_mc if result.structure_type == "sea" else t.creche_ap_short }})</caption>
+    <tr><th>{{ t.creche_tranche }}</th><th>{{ t.creche_hours_col }}</th><th>{{ t.creche_hours_used }}</th><th>{{ t.creche_rate_h }}</th><th>{{ t.creche_parent_week }}</th></tr>
+    {% for tranche in result.tranche_details %}
+    <tr {% if tranche.is_free %}class="row-free"{% endif %}>
+      <td>{{ tranche.label }}</td>
+      <td>{{ tranche.range }}</td>
+      <td>{{ tranche.hours }} h</td>
+      <td>{% if tranche.is_free %}<span class="tag-free">{{ t.label_free }}</span>{% else %}€ {{ "%.2f"|format(tranche.rate) }}{% endif %}</td>
+      <td>{% if tranche.is_free %}€ 0.00{% else %}{{ tranche.cost | currency }}{% endif %}</td>
     </tr>
     {% endfor %}
     {% if result.unsubsidized_hours > 0 %}
     <tr class="row-warn">
-      <td colspan="2">Beyond barème max ({{ result.t3_max_hours }} h)</td>
+      <td colspan="2">{{ t.creche_not_covered.split('—')[0].strip() }} ({{ result.t3_max_hours }} h)</td>
       <td>{{ result.unsubsidized_hours }} h</td>
-      <td colspan="2">⚠️ Not covered by CSA — structure's own rate applies</td>
+      <td colspan="2">{{ t.creche_not_covered }}</td>
     </tr>
     {% endif %}
   </table>
 
   {% if result.meals_per_week > 0 %}
-  <h3>Meals — {{ result.meals_per_week }} meal{{ "s" if result.meals_per_week != 1 }} / week</h3>
+  <h3>{{ t.creche_meals_sec }} — {{ result.meals_per_week }} / week</h3>
   <table>
-    <tr><th>Item</th><th>Per meal</th><th>Per week</th></tr>
+    <tr><th>{{ t.label_item }}</th><th>{{ t.creche_per_meal }}</th><th>{{ t.label_per_week }}</th></tr>
     <tr>
-      <td>Parental contribution</td>
-      <td>{% if result.meal_rate == 0 %}<span class="tag-free">FREE</span>{% else %}{{ result.meal_rate | currency }}{% endif %}</td>
+      <td>{{ t.creche_care }}</td>
+      <td>{% if result.meal_rate == 0 %}<span class="tag-free">{{ t.label_free }}</span>{% else %}{{ result.meal_rate | currency }}{% endif %}</td>
       <td>{{ result.meal_cost_week | currency }}</td>
     </tr>
   </table>
   {% endif %}
 
-  <h3>Monthly &amp; annual summary</h3>
+  <h3>{{ t.creche_summary }}</h3>
   <table>
-    <caption>Based on {{ result.weeks_per_year }} weeks/year</caption>
-    <tr><th>Item</th><th>Per week</th><th>Per month</th><th>Per year</th></tr>
+    <caption>{{ t.creche_based_on }} {{ result.weeks_per_year }} {{ t.creche_weeks_year }}</caption>
+    <tr><th>{{ t.label_item }}</th><th>{{ t.label_per_week }}</th><th>{{ t.label_per_month }}</th><th>{{ t.label_per_year }}</th></tr>
     <tr>
-      <td>Parent pays (care)</td>
+      <td>{{ t.creche_care }}</td>
       <td>{{ result.total_parent_week | currency }}</td>
       <td>{{ (result.total_parent_week * result.weeks_per_year / 12) | round(2) | currency }}</td>
       <td>{{ (result.total_parent_week * result.weeks_per_year) | round(2) | currency }}</td>
     </tr>
     {% if result.meals_per_week > 0 %}
     <tr>
-      <td>Parent pays (meals)</td>
+      <td>{{ t.creche_meals_cost }}</td>
       <td>{{ result.meal_cost_week | currency }}</td>
       <td>{{ (result.meal_cost_week * result.weeks_per_year / 12) | round(2) | currency }}</td>
       <td>{{ (result.meal_cost_week * result.weeks_per_year) | round(2) | currency }}</td>
     </tr>
     {% endif %}
     <tr>
-      <td>State subsidy (max, to structure)</td>
+      <td>{{ t.creche_state }}</td>
       <td>{{ result.state_week | currency }}</td>
       <td>{{ result.state_month | currency }}</td>
       <td>{{ (result.state_week * result.weeks_per_year) | round(2) | currency }}</td>
     </tr>
     <tr class="section-divider"><td colspan="4"></td></tr>
     <tr class="highlight">
-      <td><strong>Total parent pays</strong></td>
+      <td><strong>{{ t.creche_total }}</strong></td>
       <td><strong>{{ (result.total_parent_week + result.meal_cost_week) | round(2) | currency }}</strong></td>
       <td><strong>{{ result.total_parent_month | currency }}</strong></td>
       <td><strong>{{ result.total_parent_year | currency }}</strong></td>
@@ -174,9 +169,7 @@
   </table>
 
   <p class="info-text" style="margin-top:1rem;">
-    State subsidy shown is the <em>maximum</em> the state pays directly to the structure
-    (€ {{ "%.2f"|format(result.state_rate_per_hour) }}/h × covered hours).
-    The actual subsidy depends on the structure's own hourly rate.
+    {{ t.creche_state_note.replace('{rate}', "%.2f"|format(result.state_rate_per_hour)) | safe }}
   </p>
 </div>
 
