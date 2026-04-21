@@ -160,7 +160,7 @@ def _contributions(gross):
     """Return (maladie, maladie_espece, pension, total) for a given gross income."""
     maladie        = round(gross * 0.028,  2)
     maladie_espece = round(gross * 0.0025, 2)
-    pension        = round(gross * 0.08,   2)
+    pension        = round(gross * 0.085,  2)
     return maladie, maladie_espece, pension, round(maladie + maladie_espece + pension, 2)
 
 def calculate_parental_leave(avg_gross, leave_type, twins, social_class,
@@ -250,7 +250,7 @@ def calculate_salary(gross_salary, car_cost, frais_deplacement: float, social_cl
 
     assurance_maladie = round(total * 0.028, 2)
     assurance_maladie_espece = round(gross_salary * 0.0025, 2)
-    assurance_pension = round(total * 0.08, 2)
+    assurance_pension = round(total * 0.085, 2)
     cotisations_totales = round(assurance_maladie + assurance_maladie_espece + assurance_pension, 2)
 
     frais_deplacement = round(frais_deplacement, 2)
