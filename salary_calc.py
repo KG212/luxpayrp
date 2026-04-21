@@ -7,35 +7,91 @@ def round_down(n, decimals=0):
     multiplier = 10 ** decimals
     return math.floor(n * multiplier) / multiplier
 
-TRAVEL_DEDUCTIONS = {
-    "Beckerich": 99*(9-4)/12, "Bertrange": 99*(10-4)/12, "Bettembourg": 99*(20-4)/12,
-    "Betzdorf": 99*(29-4)/12, "Bissen": 99*(16-4)/12, "Boulaide": 99*(26-4)/12,
-    "Bourscheid": 99*(28-4)/12, "Colmar-Berg": 99*(19-4)/12, "Contern": 99*(22-4)/12,
-    "Dalheim": 99*(26-4)/12, "Diekirch": 99*(27-4)/12, "Differdange": 99*(17-4)/12,
-    "Dippach": 99*(9-4)/12, "Dudelange": 99*(23-4)/12, "Ell": 99*(13-4)/12,
-    "Erpeldange": 99*(25-4)/12, "Esch-sur-Alzette": 99*(19-4)/12, "Esch-sur-Sûre": 99*(24-4)/12,
-    "Ettelbruck": 99*(23-4)/12, "Feulen": 99*(22-4)/12, "Fischbach": 99*(19-4)/12,
-    "Flaxweiler": 99*(28-4)/12, "Frisange": 99*(24-4)/12, "Garnich": 99*(6-4)/12,
-    "Goesdorf": 99*(28-4)/12, "Grosbous": 99*(18-4)/12, "Habscht": 99*(5-4)/12,
-    "Heffingen": 99*(24-4)/12, "Helperknapp": 99*(7-4)/12, "Hesperange": 99*(18-4)/12,
-    "Junglinster": 99*(22-4)/12, "Käerjeng": 99*(12-4)/12, "Kayl": 99*(21-4)/12,
-    "Kehlen": 99*(6-4)/12, "Kopstal": 99*(9-4)/12, "Lac de la Haute-Sûre": 99*(29-4)/12,
-    "Larochette": 99*(23-4)/12, "Leudelange": 99*(14-4)/12, "Lintgen": 99*(14-4)/12,
-    "Lorentzweiler": 99*(14-4)/12, "Luxembourg": 99*(15-4)/12, "Mamer": 99*(7-4)/12,
-    "Mersch": 99*(14-4)/12, "Mertzig": 99*(19-4)/12, "Mondercange": 99*(16-4)/12,
-    "Mondorf-les-Bains": 99*(29-4)/12, "Niederanven": 99*(21-4)/12, "Nommern": 99*(21-4)/12,
-    "Pétange": 99*(13-4)/12, "Préizerdaul": 99*(14-4)/12, "Rambrouch": 99*(19-4)/12,
-    "Reckange-sur-Mess": 99*(13-4)/12, "Redange/Attert": 99*(12-4)/12, "Roeser": 99*(20-4)/12,
-    "Rumelange": 99*(24-4)/12, "Saeul": 99*(7-4)/12, "Sandweiler": 99*(20-4)/12,
-    "Sanem": 99*(14-4)/12, "Schieren": 99*(21-4)/12, "Schifflange": 99*(19-4)/12,
-    "Schuttrange": 99*(24-4)/12, "Steinfort": max(0, 99*(3-4)/12), "Steinsel": 99*(13-4)/12,
-    "Strassen": 99*(10-4)/12, "Useldange": 99*(11-4)/12, "Vallée de l'Ernz": 99*(25-4)/12,
-    "Vichten": 99*(15-4)/12, "Wahl": 99*(19-4)/12, "Waldbillig": 99*(28-4)/12,
-    "Waldbredimus": 99*(27-4)/12, "Walferdange": 99*(13-4)/12, "Weiler-la-Tour": 99*(23-4)/12
+# ── Official distances (unités d'éloignement) — Mémorial A n° 1021 du 4.12.2017 ──
+# Straight-line km between commune headquarters.
+# Deductible only when distance > 4 units; capped at 30 units.
+# Formula: monthly frais = 99 × max(0, units − 4) / 12
+_DIST_TO_LUX: dict[str, int] = {
+    "Beckerich": 9,   "Bertrange": 10,  "Bettembourg": 20, "Betzdorf": 29,
+    "Bissen": 16,     "Biwer": 23,      "Boulaide": 26,    "Bourscheid": 28,
+    "Colmar-Berg": 19,"Contern": 22,    "Dalheim": 26,     "Diekirch": 27,
+    "Differdange": 17,"Dippach": 9,     "Dudelange": 23,   "Ell": 13,
+    "Erpeldange": 25, "Esch-sur-Alzette": 19, "Esch-sur-Sûre": 24,
+    "Ettelbruck": 23, "Feulen": 22,     "Fischbach": 19,   "Flaxweiler": 28,
+    "Frisange": 24,   "Garnich": 6,     "Goesdorf": 28,    "Grosbous": 18,
+    "Habscht": 5,     "Heffingen": 24,  "Helperknapp": 7,  "Hesperange": 18,
+    "Junglinster": 22,"Käerjeng": 12,   "Kayl": 21,        "Kehlen": 6,
+    "Kopstal": 9,     "Lac de la Haute-Sûre": 29,          "Larochette": 23,
+    "Leudelange": 14, "Lintgen": 14,    "Lorentzweiler": 14, "Luxembourg": 15,
+    "Mamer": 7,       "Mersch": 14,     "Mertzig": 19,     "Mondercange": 16,
+    "Mondorf-les-Bains": 29, "Niederanven": 21, "Nommern": 21,
+    "Pétange": 13,    "Préizerdaul": 14,"Rambrouch": 19,   "Reckange-sur-Mess": 13,
+    "Redange/Attert": 12, "Roeser": 20, "Rumelange": 24,   "Saeul": 7,
+    "Sandweiler": 20, "Sanem": 14,      "Schieren": 21,    "Schifflange": 19,
+    "Schuttrange": 24,"Steinfort": 17,  "Steinsel": 13,    "Strassen": 10,
+    "Useldange": 11,  "Vallée de l'Ernz": 25, "Vichten": 15, "Wahl": 19,
+    "Waldbillig": 28, "Waldbredimus": 27, "Walferdange": 13, "Weiler-la-Tour": 23,
 }
 
-def get_travel_deduction(residence):
-    return TRAVEL_DEDUCTIONS.get(residence, 0.0)
+def _frais_from_units(units: int) -> float:
+    """Monthly frais de déplacement (€) from distance in unités d'éloignement."""
+    return round(max(0.0, 99 * (units - 4) / 12), 2)
+
+# Legacy dict kept for any external reference (values are monthly € amounts)
+TRAVEL_DEDUCTIONS = {k: _frais_from_units(v) for k, v in _DIST_TO_LUX.items()}
+
+# Full list of Luxembourg communes (Mémorial 2017 + 2022 municipal mergers)
+ALL_COMMUNES: list[str] = sorted([
+    "Beaufort", "Bech", "Beckerich", "Berdorf", "Bertrange", "Bettembourg",
+    "Bettendorf", "Betzdorf", "Biwer", "Boulaide", "Bourscheid", "Bous",
+    "Clervaux", "Colmar-Berg", "Consdorf", "Contern",
+    "Dalheim", "Diekirch", "Differdange", "Dippach", "Dudelange",
+    "Echternach", "Ell", "Erpeldange", "Esch-sur-Alzette", "Esch-sur-Sûre", "Ettelbruck",
+    "Feulen", "Fischbach", "Flaxweiler", "Frisange",
+    "Garnich", "Goesdorf", "Grevenmacher", "Grosbous",
+    "Habscht", "Heffingen", "Helperknapp", "Hesperange",
+    "Junglinster", "Käerjeng", "Kayl", "Kehlen", "Kiischpelt", "Koerich", "Kopstal",
+    "Lac de la Haute-Sûre", "Larochette", "Lenningen", "Leudelange", "Lintgen", "Lorentzweiler",
+    "Luxembourg", "Mamer", "Manternach", "Mersch", "Mertert", "Mertzig",
+    "Mondercange", "Mondorf-les-Bains",
+    "Niederanven", "Nommern",
+    "Parc Hosingen", "Pétange", "Préizerdaul", "Putscheid",
+    "Rambrouch", "Reckange-sur-Mess", "Redange/Attert", "Reisdorf", "Remich",
+    "Roeser", "Rosport-Mompach", "Rumelange",
+    "Saeul", "Sandweiler", "Sanem", "Schengen", "Schieren", "Schifflange",
+    "Schuttrange", "Stadtbredimus", "Steinfort", "Steinsel", "Strassen",
+    "Tandel", "Troisvierges", "Useldange",
+    "Vallée de l'Ernz", "Vianden", "Vichten",
+    "Wahl", "Waldbillig", "Waldbredimus", "Walferdange", "Weiler-la-Tour",
+    "Weiswampach", "Wiltz", "Wincrange", "Winseler", "Wormeldange",
+])
+
+def get_frais_deplacement(residence: str, workplace: str) -> tuple[float, int, bool]:
+    """Return (monthly_amount_€, units, data_available) for a residence→workplace pair.
+
+    *data_available* is False when the pair is not in the official table and the
+    returned amount is therefore 0 (not a real deduction value).
+
+    The official table (Mémorial A n° 1021, 2017) gives distances from/to each
+    commune in Luxembourg.  Distances are symmetric.  For the current data set
+    only the column "Luxembourg" has been fully encoded; for other workplace
+    communes, data_available will be False.
+    """
+    if not residence or not workplace:
+        return 0.0, 0, False
+    if residence == workplace:
+        return 0.0, 0, True          # same commune → no travel deduction
+    # Look up distance using Luxembourg as reference (symmetric)
+    if workplace == "Luxembourg":
+        units = _DIST_TO_LUX.get(residence)
+        if units is not None:
+            return _frais_from_units(units), units, True
+    if residence == "Luxembourg":
+        units = _DIST_TO_LUX.get(workplace)
+        if units is not None:
+            return _frais_from_units(units), units, True
+    # Other pairs: not yet encoded — return unavailable
+    return 0.0, 0, False
 
 TAX_BRACKETS = {
     "Classe 1": [
@@ -107,7 +163,8 @@ def _contributions(gross):
     pension        = round(gross * 0.08,   2)
     return maladie, maladie_espece, pension, round(maladie + maladie_espece + pension, 2)
 
-def calculate_parental_leave(avg_gross, leave_type, twins, social_class, residence):
+def calculate_parental_leave(avg_gross, leave_type, twins, social_class,
+                             frais_deplacement: float = 0.0):
     config    = LEAVE_TYPES[leave_type]
     reduction = config["reduction"]
     duration  = config["duration_twins"] if twins else config["duration_single"]
@@ -128,7 +185,7 @@ def calculate_parental_leave(avg_gross, leave_type, twins, social_class, residen
     else:
         emp_gross = round(avg_gross * (1 - reduction), 2)
         emp_mal, emp_mal_e, emp_pen, emp_cot = _contributions(emp_gross)
-        emp_frais     = round(get_travel_deduction(residence), 2)
+        emp_frais     = round(frais_deplacement, 2)
         emp_imposable = round(emp_gross - emp_cot - emp_frais, 2)
 
     # --- Combined tax (both sources form a single annual tax base) ---
@@ -185,7 +242,7 @@ def calculate_parental_leave(avg_gross, leave_type, twins, social_class, residen
         "ssm_max":            PARENTAL_LEAVE_MAX,
     }
 
-def calculate_salary(gross_salary, car_cost, residence, social_class):
+def calculate_salary(gross_salary, car_cost, frais_deplacement: float, social_class):
     total = gross_salary + car_cost
     total_year = total * 12
 
@@ -194,7 +251,7 @@ def calculate_salary(gross_salary, car_cost, residence, social_class):
     assurance_pension = round(total * 0.08, 2)
     cotisations_totales = round(assurance_maladie + assurance_maladie_espece + assurance_pension, 2)
 
-    frais_deplacement = get_travel_deduction(residence)
+    frais_deplacement = round(frais_deplacement, 2)
     imposable = round(total - cotisations_totales - frais_deplacement, 2)
     assurance_dependance = round((total - 535) * 0.014, 2)
 

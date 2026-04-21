@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, session, redirect, url_for
 from salary_calc import (calculate_salary, calculate_parental_leave, calculate_csa,
-                         TRAVEL_DEDUCTIONS, LEAVE_TYPES, SSM_NON_QUALIFIED)
+                         get_frais_deplacement, ALL_COMMUNES,
+                         LEAVE_TYPES, SSM_NON_QUALIFIED)
 from translations import TRANSLATIONS
 
 app = Flask(__name__)
@@ -14,7 +15,7 @@ def currency_filter(value):
 
 @app.context_processor
 def inject_translations():
-    lang = session.get('lang', 'en')
+    lang = session.get('lang', 'fr')
     return {'t': TRANSLATIONS[lang], 'lang': lang}
 
 
@@ -26,7 +27,6 @@ def set_lang(lang):
 
 
 SOCIAL_CLASSES = ["Classe 1", "Classe 1A", "Classe 2"]
-RESIDENCES = ["Select"] + list(TRAVEL_DEDUCTIONS.keys())
 
 
 @app.route("/")
@@ -41,23 +41,36 @@ def salary():
     if request.method == "POST":
         try:
             gross        = float(request.form["gross_salary"])
-            car          = float(request.form["car_cost"])
-            residence    = request.form["residence"]
+            car          = float(request.form.get("car_cost") or "0")
             social_class = request.form["social_class"]
+            compute_frais = request.form.get("compute_frais") == "yes"
+            residence    = request.form.get("residence", "").strip()
+            workplace    = request.form.get("workplace", "").strip()
+
             if gross <= 0:
                 error_key = "err_gross_pos"
             elif car < 0:
                 error_key = "err_car_neg"
             elif social_class not in SOCIAL_CLASSES:
                 error_key = "err_class"
-            elif residence not in TRAVEL_DEDUCTIONS:
-                error_key = "err_residence"
             else:
-                result = calculate_salary(gross, car, residence, social_class)
+                frais_amount = 0.0
+                frais_units  = 0
+                frais_ok     = True
+                if compute_frais and residence and workplace:
+                    frais_amount, frais_units, frais_ok = get_frais_deplacement(
+                        residence, workplace)
+
+                result = calculate_salary(gross, car, frais_amount, social_class)
+                result['frais_units']     = frais_units
+                result['frais_available'] = frais_ok
+                result['residence']       = residence
+                result['workplace']       = workplace
+                result['compute_frais']   = compute_frais
         except ValueError:
             error_key = "err_numeric"
     return render_template("index.html", result=result, error_key=error_key,
-                           social_classes=SOCIAL_CLASSES, residences=RESIDENCES)
+                           social_classes=SOCIAL_CLASSES, communes=ALL_COMMUNES)
 
 
 @app.route("/parental_leave", methods=["GET", "POST"])
@@ -70,23 +83,36 @@ def parental_leave():
             leave_type   = request.form["leave_type"]
             twins        = request.form.get("twins") == "yes"
             social_class = request.form["social_class"]
-            residence    = request.form["residence"]
+            compute_frais = request.form.get("compute_frais") == "yes"
+            residence    = request.form.get("residence", "").strip()
+            workplace    = request.form.get("workplace", "").strip()
+
             if avg_gross <= 0:
                 error_key = "err_avg_gross"
             elif leave_type not in LEAVE_TYPES:
                 error_key = "err_leave_type"
             elif social_class not in SOCIAL_CLASSES:
                 error_key = "err_class"
-            elif residence not in TRAVEL_DEDUCTIONS:
-                error_key = "err_residence"
             else:
+                frais_amount = 0.0
+                frais_units  = 0
+                frais_ok     = True
+                if compute_frais and residence and workplace:
+                    frais_amount, frais_units, frais_ok = get_frais_deplacement(
+                        residence, workplace)
+
                 result = calculate_parental_leave(avg_gross, leave_type, twins,
-                                                  social_class, residence)
+                                                  social_class, frais_amount)
+                result['frais_units']     = frais_units
+                result['frais_available'] = frais_ok
+                result['residence']       = residence
+                result['workplace']       = workplace
+                result['compute_frais']   = compute_frais
         except ValueError:
             error_key = "err_avg_numeric"
     return render_template("parental_leave.html", result=result, error_key=error_key,
                            leave_types=LEAVE_TYPES, social_classes=SOCIAL_CLASSES,
-                           residences=RESIDENCES)
+                           communes=ALL_COMMUNES)
 
 
 @app.route("/creche", methods=["GET", "POST"])

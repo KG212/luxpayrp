@@ -228,6 +228,26 @@ label small {
 
 .btn:active { transform: scale(0.98); }
 
+/* Allow <a> tags to behave as buttons */
+a.btn {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Frais de déplacement collapsible sub-section */
+.frais-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 0.75rem 1rem;
+  background: var(--brand-light);
+  border-left: 3px solid var(--brand);
+  border-radius: 6px;
+}
+
 .btn-primary {
   background: var(--brand);
   color: #fff;

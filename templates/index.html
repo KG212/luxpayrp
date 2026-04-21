@@ -31,19 +31,39 @@
       </select>
     </label>
 
-    <label>{{ t.label_residence }}
-      <select name="residence" required>
-        {% for city in residences %}
-          <option value="{{ city }}" {% if request.form.residence == city %}selected{% endif %}>
-            {{ t.label_select if city == 'Select' else city }}
-          </option>
-        {% endfor %}
-      </select>
+    <!-- ── Optional Frais de Déplacement section ───────────────────── -->
+    <label class="checkbox-label">
+      <input type="checkbox" name="compute_frais" value="yes" id="frais-check"
+             {% if request.form.compute_frais == "yes" %}checked{% endif %}
+             onchange="document.getElementById('frais-fields').style.display = this.checked ? 'flex' : 'none'">
+      {{ t.label_frais_toggle }}
     </label>
+
+    <div id="frais-fields" class="frais-fields" {% if request.form.compute_frais != 'yes' %}style="display:none"{% endif %}>
+      <label>{{ t.label_residence }}
+        <select name="residence">
+          <option value="">{{ t.label_select }}</option>
+          {% for c in communes %}
+            <option value="{{ c }}" {% if request.form.residence == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label>{{ t.label_workplace }}
+        <select name="workplace">
+          <option value="">{{ t.label_select }}</option>
+          {% for c in communes %}
+            <option value="{{ c }}" {% if request.form.workplace == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+        <small>{{ t.label_frais_note }}</small>
+      </label>
+    </div>
+    <!-- ────────────────────────────────────────────────────────────── -->
 
     <div class="btn-row">
       <button type="submit" class="btn btn-primary">{{ t.btn_calculate }}</button>
-      <button type="reset"  class="btn btn-secondary">{{ t.btn_reset }}</button>
+      <a href="{{ url_for('salary') }}" class="btn btn-secondary">{{ t.btn_reset }}</a>
     </div>
   </form>
 </div>
@@ -68,6 +88,13 @@
 
 <div class="card">
   <h2>{{ t.label_results }}</h2>
+
+  {% if result.compute_frais and result.residence and result.workplace %}
+    {% if not result.frais_available %}
+    <div class="info-text">{{ t.label_frais_na | safe }}</div>
+    {% endif %}
+  {% endif %}
+
   <table>
     <caption>{{ t.salary_breakdown }}</caption>
     <tr><th>{{ t.label_item }}</th><th>{{ t.label_amount }}</th></tr>
@@ -80,7 +107,12 @@
     <tr><td>{{ t.salary_maladie_e }}</td>    <td>− {{ result.assurance_maladie_espece | currency }}</td></tr>
     <tr><td>{{ t.salary_pension }}</td>      <td>− {{ result.assurance_pension | currency }}</td></tr>
     <tr><td>{{ t.salary_cotisations }}</td>  <td>− {{ result.cotisations_totales | currency }}</td></tr>
-    <tr><td>{{ t.salary_frais }}</td>        <td>− {{ result.frais_deplacement | currency }}</td></tr>
+    {% if result.frais_deplacement > 0 %}
+    <tr><td>{{ t.salary_frais }}
+      {% if result.frais_units %}<small>({{ result.frais_units }} {{ t.label_frais_units }})</small>{% endif %}
+    </td>
+        <td>− {{ result.frais_deplacement | currency }}</td></tr>
+    {% endif %}
     <tr class="section-divider"><td colspan="2"></td></tr>
     <tr><td>{{ t.salary_imposable }}</td>    <td>{{ result.imposable | currency }}</td></tr>
     <tr><td>{{ t.salary_dependance }}</td>   <td>− {{ result.assurance_dependance | currency }}</td></tr>

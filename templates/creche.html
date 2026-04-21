@@ -70,7 +70,7 @@
 
     <div class="btn-row">
       <button type="submit" class="btn btn-primary">{{ t.btn_calculate }}</button>
-      <button type="reset"  class="btn btn-secondary" onclick="document.getElementById('income-field').style.display='flex'">{{ t.btn_reset }}</button>
+      <a href="{{ url_for('creche') }}" class="btn btn-secondary">{{ t.btn_reset }}</a>
     </div>
   </form>
 </div>
