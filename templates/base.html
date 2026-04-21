@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
   <!-- ═══════════════════════════════════════════════════
-       GOOGLE ADSENSE — Step 1: paste your publisher script here
+       GOOGLE ADSENSE — paste your publisher script here
   ════════════════════════════════════════════════════════
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
           crossorigin="anonymous"></script>
@@ -20,7 +20,7 @@
 </head>
 <body>
 
-  <!-- ── Top header (desktop + mobile) ─────────────────────────────── -->
+  <!-- ── Top header ─────────────────────────────────────────────────── -->
   <header class="app-header">
     <div class="header-inner">
       <span class="app-logo">🇱🇺 MyMoney@Lux</span>
@@ -29,9 +29,21 @@
         <a href="{{ url_for('set_lang', lang='fr') }}" class="lang-btn{% if lang == 'fr' %} lang-active{% endif %}">FR</a>
       </div>
     </div>
+    <!-- ── Navigation tabs ── -->
+    <nav class="top-nav">
+      <a href="{{ url_for('salary') }}"         class="top-nav__item {% if request.endpoint == 'salary' %}active{% endif %}">
+        <span class="top-nav__icon">💼</span> {{ t.nav_salary }}
+      </a>
+      <a href="{{ url_for('parental_leave') }}" class="top-nav__item {% if request.endpoint == 'parental_leave' %}active{% endif %}">
+        <span class="top-nav__icon">👶</span> {{ t.nav_parental }}
+      </a>
+      <a href="{{ url_for('creche') }}"         class="top-nav__item {% if request.endpoint == 'creche' %}active{% endif %}">
+        <span class="top-nav__icon">🏡</span> {{ t.nav_creche }}
+      </a>
+    </nav>
   </header>
 
-  <!-- ── Ad slot: top banner ────────────────────────────────────────── -->
+  <!-- ── Ad slot: leaderboard ───────────────────────────────────────── -->
   <div class="ad-slot ad-slot--leaderboard">
     <!-- ═══════════════════════════════════════════════════
          GOOGLE ADSENSE — leaderboard ad unit here
@@ -50,7 +62,7 @@
     {% block content %}{% endblock %}
   </div>
 
-  <!-- ── Ad slot: Footer banner ─────────────────────────────────────── -->
+  <!-- ── Ad slot: footer ────────────────────────────────────────────── -->
   <div class="ad-slot ad-slot--footer">
     <!-- ═══════════════════════════════════════════════════
          GOOGLE ADSENSE — footer ad unit here
@@ -64,22 +76,6 @@
     ═══════════════════════════════════════════════════════ -->
     <span class="ad-placeholder-label">{{ t.advertisement }}</span>
   </div>
-
-  <!-- ── Bottom tab navigation (mobile-first) ───────────────────────── -->
-  <nav class="bottom-nav">
-    <a href="{{ url_for('salary') }}"        class="bottom-nav__item {% if request.endpoint == 'salary' %}active{% endif %}">
-      <span class="bottom-nav__icon">💼</span>
-      <span class="bottom-nav__label">{{ t.nav_salary }}</span>
-    </a>
-    <a href="{{ url_for('parental_leave') }}" class="bottom-nav__item {% if request.endpoint == 'parental_leave' %}active{% endif %}">
-      <span class="bottom-nav__icon">👶</span>
-      <span class="bottom-nav__label">{{ t.nav_parental }}</span>
-    </a>
-    <a href="{{ url_for('creche') }}"         class="bottom-nav__item {% if request.endpoint == 'creche' %}active{% endif %}">
-      <span class="bottom-nav__icon">🏡</span>
-      <span class="bottom-nav__label">{{ t.nav_creche }}</span>
-    </a>
-  </nav>
 
 </body>
 </html>

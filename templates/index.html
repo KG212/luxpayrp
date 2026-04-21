@@ -45,11 +45,10 @@
     </label>
 
     <!-- Frais de Déplacement toggle -->
-    <label class="toggle-row" for="frais-check"
-           onclick="document.getElementById('frais-fields').style.display = document.getElementById('frais-check').checked ? 'none' : 'flex'">
+    <label class="toggle-row">
       <span class="toggle-row__text">
         <span class="toggle-row__label">{{ t.label_frais_toggle }}</span>
-        <span class="toggle-row__sub">{{ t.label_frais_note }}</span>
+        <span class="toggle-row__sub">{{ t.label_frais_sub }}</span>
       </span>
       <span class="toggle-switch">
         <input type="checkbox" name="compute_frais" value="yes" id="frais-check"
@@ -60,21 +59,11 @@
     </label>
 
     <div id="frais-fields" class="frais-fields" {% if request.form.compute_frais != 'yes' %}style="display:none"{% endif %}>
-      <label>{{ t.label_residence }}
-        <select name="residence">
-          <option value="">{{ t.label_select }}</option>
-          {% for c in communes %}
-            <option value="{{ c }}" {% if request.form.residence == c %}selected{% endif %}>{{ c }}</option>
-          {% endfor %}
-        </select>
-      </label>
-      <label>{{ t.label_workplace }}
-        <select name="workplace">
-          <option value="">{{ t.label_select }}</option>
-          {% for c in communes %}
-            <option value="{{ c }}" {% if request.form.workplace == c %}selected{% endif %}>{{ c }}</option>
-          {% endfor %}
-        </select>
+      <label>{{ t.label_frais_amount }}
+        <input type="number" name="frais_amount" min="0" step="0.01"
+               placeholder="ex. 24.75"
+               value="{{ request.form.frais_amount or '' }}">
+        <small>{{ t.label_frais_help }}</small>
       </label>
     </div>
 
@@ -94,11 +83,6 @@
 <div class="card">
   <h2>{{ t.label_results }}</h2>
 
-  {% if result.compute_frais and result.residence and result.workplace %}
-    {% if not result.frais_available %}
-    <div class="info-text">{{ t.label_frais_na | safe }}</div>
-    {% endif %}
-  {% endif %}
 
   <!-- Vos données -->
   <h3>{{ t.salary_section_inputs }}</h3>
@@ -133,9 +117,7 @@
     <tr><th>{{ t.label_item }}</th><th>{{ t.label_amount }}</th></tr>
     <tr><td>{{ t.salary_imposable }}</td>   <td>{{ result.imposable | currency }}</td></tr>
     {% if result.frais_deplacement > 0 %}
-    <tr><td>{{ t.salary_frais }}
-      {% if result.frais_units %}<small>({{ result.frais_units }} unités)</small>{% endif %}
-    </td><td>− {{ result.frais_deplacement | currency }}</td></tr>
+    <tr><td>{{ t.salary_frais }}</td><td>− {{ result.frais_deplacement | currency }}</td></tr>
     {% endif %}
     <tr><td>{{ t.salary_dependance }}</td>  <td>− {{ result.assurance_dependance | currency }}</td></tr>
     <tr><td>{{ t.salary_cis }}</td>         <td>+ {{ result.cis | currency }}</td></tr>
