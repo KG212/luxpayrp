@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t.salary_title }} — LuxPay{% endblock %}
+{% block title %}{{ t.salary_title }} — MyMoney@Lux{% endblock %}
 
 {% block content %}
 <div class="card">
@@ -31,18 +31,32 @@
       </select>
     </label>
 
-    <label class="checkbox-label">
-      <input type="checkbox" name="ticket_restaurant" value="yes"
-             {% if request.form.ticket_restaurant == "yes" %}checked{% endif %}>
-      {{ t.salary_ticket_label }}
+    <!-- Ticket Restaurant toggle -->
+    <label class="toggle-row">
+      <span class="toggle-row__text">
+        <span class="toggle-row__label">{{ t.salary_ticket_label }}</span>
+        <span class="toggle-row__sub">€ 50.40 / mois</span>
+      </span>
+      <span class="toggle-switch">
+        <input type="checkbox" name="ticket_restaurant" value="yes"
+               {% if request.form.ticket_restaurant == "yes" %}checked{% endif %}>
+        <span class="toggle-slider"></span>
+      </span>
     </label>
 
-    <!-- ── Optional Frais de Déplacement section ───────────────────── -->
-    <label class="checkbox-label">
-      <input type="checkbox" name="compute_frais" value="yes" id="frais-check"
-             {% if request.form.compute_frais == "yes" %}checked{% endif %}
-             onchange="document.getElementById('frais-fields').style.display = this.checked ? 'flex' : 'none'">
-      {{ t.label_frais_toggle }}
+    <!-- Frais de Déplacement toggle -->
+    <label class="toggle-row" for="frais-check"
+           onclick="document.getElementById('frais-fields').style.display = document.getElementById('frais-check').checked ? 'none' : 'flex'">
+      <span class="toggle-row__text">
+        <span class="toggle-row__label">{{ t.label_frais_toggle }}</span>
+        <span class="toggle-row__sub">{{ t.label_frais_note }}</span>
+      </span>
+      <span class="toggle-switch">
+        <input type="checkbox" name="compute_frais" value="yes" id="frais-check"
+               {% if request.form.compute_frais == "yes" %}checked{% endif %}
+               onchange="document.getElementById('frais-fields').style.display = this.checked ? 'flex' : 'none'">
+        <span class="toggle-slider"></span>
+      </span>
     </label>
 
     <div id="frais-fields" class="frais-fields" {% if request.form.compute_frais != 'yes' %}style="display:none"{% endif %}>
@@ -54,7 +68,6 @@
           {% endfor %}
         </select>
       </label>
-
       <label>{{ t.label_workplace }}
         <select name="workplace">
           <option value="">{{ t.label_select }}</option>
@@ -62,10 +75,8 @@
             <option value="{{ c }}" {% if request.form.workplace == c %}selected{% endif %}>{{ c }}</option>
           {% endfor %}
         </select>
-        <small>{{ t.label_frais_note }}</small>
       </label>
     </div>
-    <!-- ────────────────────────────────────────────────────────────── -->
 
     <div class="btn-row">
       <button type="submit" class="btn btn-primary">{{ t.btn_calculate }}</button>
@@ -76,19 +87,7 @@
 
 {% if result %}
 
-<!-- ── Ad slot: Rectangle (between form and results) ── -->
 <div class="ad-slot ad-slot--rectangle">
-  <!-- ═══════════════════════════════════════════════════
-       GOOGLE ADSENSE — paste your rectangle ad unit here
-  ════════════════════════════════════════════════════════
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-       data-ad-slot="XXXXXXXXXX"
-       data-ad-format="auto"
-       data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  ═══════════════════════════════════════════════════════ -->
   <span class="ad-placeholder-label">{{ t.advertisement }}</span>
 </div>
 
@@ -101,7 +100,7 @@
     {% endif %}
   {% endif %}
 
-  <!-- ── Your Inputs ── -->
+  <!-- Vos données -->
   <h3>{{ t.salary_section_inputs }}</h3>
   <table>
     <tr><th>{{ t.label_item }}</th><th>{{ t.label_amount }}</th></tr>
@@ -110,49 +109,43 @@
     <tr><td>{{ t.salary_car_col }}</td>      <td>{{ result.car_cost | currency }}</td></tr>
     <tr>
       <td>{{ t.salary_ticket_label }}</td>
-      <td>
-        {% if result.has_ticket %}
-          <span class="tag-free" style="background:#dcfce7;color:#166534;">{{ t.label_yes }}</span>
-        {% else %}
-          <span class="tag-free" style="background:#f3f4f6;color:#6b7280;">{{ t.label_no }}</span>
-        {% endif %}
-      </td>
+      <td>{% if result.has_ticket %}<span class="badge-yn badge-yn--yes">{{ t.label_yes }}</span>
+          {% else %}<span class="badge-yn badge-yn--no">{{ t.label_no }}</span>{% endif %}</td>
     </tr>
   </table>
 
-  <!-- ── Cotisations sociales ── -->
+  <!-- Cotisations sociales -->
   <h3>{{ t.salary_section_cot }}</h3>
   <table>
     <tr><th>{{ t.label_item }}</th><th>{{ t.label_amount }}</th></tr>
-    <tr><td>{{ t.salary_maladie }}</td>      <td>− {{ result.assurance_maladie | currency }}</td></tr>
-    <tr><td>{{ t.salary_maladie_e }}</td>    <td>− {{ result.assurance_maladie_espece | currency }}</td></tr>
-    <tr><td>{{ t.salary_pension }}</td>      <td>− {{ result.assurance_pension | currency }}</td></tr>
+    <tr><td>{{ t.salary_maladie }}</td>     <td>− {{ result.assurance_maladie | currency }}</td></tr>
+    <tr><td>{{ t.salary_maladie_e }}</td>   <td>− {{ result.assurance_maladie_espece | currency }}</td></tr>
+    <tr><td>{{ t.salary_pension }}</td>     <td>− {{ result.assurance_pension | currency }}</td></tr>
     <tr class="highlight">
       <td><strong>{{ t.salary_cotisations }}</strong></td>
       <td><strong>− {{ result.cotisations_totales | currency }}</strong></td>
     </tr>
   </table>
 
-  <!-- ── Impôt ── -->
+  <!-- Impôt -->
   <h3>{{ t.salary_section_impot }}</h3>
   <table>
     <tr><th>{{ t.label_item }}</th><th>{{ t.label_amount }}</th></tr>
-    <tr><td>{{ t.salary_imposable }}</td>    <td>{{ result.imposable | currency }}</td></tr>
+    <tr><td>{{ t.salary_imposable }}</td>   <td>{{ result.imposable | currency }}</td></tr>
     {% if result.frais_deplacement > 0 %}
     <tr><td>{{ t.salary_frais }}
-      {% if result.frais_units %}<small>({{ result.frais_units }} {{ t.label_frais_units }})</small>{% endif %}
-    </td>
-        <td>− {{ result.frais_deplacement | currency }}</td></tr>
+      {% if result.frais_units %}<small>({{ result.frais_units }} unités)</small>{% endif %}
+    </td><td>− {{ result.frais_deplacement | currency }}</td></tr>
     {% endif %}
-    <tr><td>{{ t.salary_dependance }}</td>   <td>− {{ result.assurance_dependance | currency }}</td></tr>
-    <tr><td>{{ t.salary_cis }}</td>          <td>+ {{ result.cis | currency }}</td></tr>
+    <tr><td>{{ t.salary_dependance }}</td>  <td>− {{ result.assurance_dependance | currency }}</td></tr>
+    <tr><td>{{ t.salary_cis }}</td>         <td>+ {{ result.cis | currency }}</td></tr>
     <tr class="highlight">
       <td><strong>{{ t.salary_impot }}</strong></td>
       <td><strong>− {{ result.impot | currency }}</strong></td>
     </tr>
   </table>
 
-  <!-- ── Final ── -->
+  <!-- Final -->
   <table style="margin-top:1rem;">
     <tr><th>{{ t.label_item }}</th><th>{{ t.label_amount }}</th></tr>
     <tr class="highlight">
@@ -164,7 +157,7 @@
       <td>{{ result.restant_year | currency }}</td>
     </tr>
   </table>
-
 </div>
+
 {% endif %}
 {% endblock %}

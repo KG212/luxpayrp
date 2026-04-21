@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t.creche_title }} — LuxPay{% endblock %}
+{% block title %}{{ t.creche_title }} — MyMoney@Lux{% endblock %}
 
 {% block content %}
 <div class="card">
@@ -14,11 +14,17 @@
 
   <form method="POST" class="form-stack">
 
-    <label class="checkbox-label">
-      <input type="checkbox" name="revis" value="yes" id="revis-check"
-             {% if request.form.revis == "yes" %}checked{% endif %}
-             onchange="document.getElementById('income-field').style.display = this.checked ? 'none' : 'flex'">
-      {{ t.creche_revis }}
+    <!-- REVIS toggle -->
+    <label class="toggle-row">
+      <span class="toggle-row__text">
+        <span class="toggle-row__label">{{ t.creche_revis }}</span>
+      </span>
+      <span class="toggle-switch">
+        <input type="checkbox" name="revis" value="yes" id="revis-check"
+               {% if request.form.revis == "yes" %}checked{% endif %}
+               onchange="document.getElementById('income-field').style.display = this.checked ? 'none' : 'flex'">
+        <span class="toggle-slider"></span>
+      </span>
     </label>
 
     <label id="income-field" {% if request.form.revis == "yes" %}style="display:none"{% endif %}>
@@ -77,19 +83,7 @@
 
 {% if result %}
 
-<!-- ── Ad slot: Rectangle (between form and results) ── -->
 <div class="ad-slot ad-slot--rectangle">
-  <!-- ═══════════════════════════════════════════════════
-       GOOGLE ADSENSE — paste your rectangle ad unit here
-  ════════════════════════════════════════════════════════
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-       data-ad-slot="XXXXXXXXXX"
-       data-ad-format="auto"
-       data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  ═══════════════════════════════════════════════════════ -->
   <span class="ad-placeholder-label">{{ t.advertisement }}</span>
 </div>
 

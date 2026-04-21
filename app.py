@@ -85,9 +85,6 @@ def parental_leave():
             leave_type   = request.form["leave_type"]
             twins        = request.form.get("twins") == "yes"
             social_class = request.form["social_class"]
-            compute_frais = request.form.get("compute_frais") == "yes"
-            residence    = request.form.get("residence", "").strip()
-            workplace    = request.form.get("workplace", "").strip()
 
             if avg_gross <= 0:
                 error_key = "err_avg_gross"
@@ -96,25 +93,12 @@ def parental_leave():
             elif social_class not in SOCIAL_CLASSES:
                 error_key = "err_class"
             else:
-                frais_amount = 0.0
-                frais_units  = 0
-                frais_ok     = True
-                if compute_frais and residence and workplace:
-                    frais_amount, frais_units, frais_ok = get_frais_deplacement(
-                        residence, workplace)
-
                 result = calculate_parental_leave(avg_gross, leave_type, twins,
-                                                  social_class, frais_amount)
-                result['frais_units']     = frais_units
-                result['frais_available'] = frais_ok
-                result['residence']       = residence
-                result['workplace']       = workplace
-                result['compute_frais']   = compute_frais
+                                                  social_class)
         except ValueError:
             error_key = "err_avg_numeric"
     return render_template("parental_leave.html", result=result, error_key=error_key,
-                           leave_types=LEAVE_TYPES, social_classes=SOCIAL_CLASSES,
-                           communes=ALL_COMMUNES)
+                           leave_types=LEAVE_TYPES, social_classes=SOCIAL_CLASSES)
 
 
 @app.route("/creche", methods=["GET", "POST"])

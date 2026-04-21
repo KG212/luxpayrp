@@ -29,7 +29,7 @@ TRANSLATIONS = {
         "label_frais_na":     "Distance not available for this commune pair — deduction set to € 0. "
                               "Refer to the <a href='https://legilux.public.lu/eli/etat/leg/rgm/2017/12/01/a1021/jo' target='_blank'>official table</a>.",
         # ── Home
-        "home_welcome":       "Welcome to LuxPay 🇱🇺",
+        "home_welcome":       "Welcome to MyMoney@Lux 🇱🇺",
         "home_subtitle":      "Select a calculator from the menu above to get started.",
         # ── Salary calculator
         "salary_title":       "💼 Salary Calculator",
@@ -185,7 +185,7 @@ TRANSLATIONS = {
         "label_frais_na":     "Distance non disponible pour cette paire de communes — déduction fixée à 0 €. "
                               "Consultez le <a href='https://legilux.public.lu/eli/etat/leg/rgm/2017/12/01/a1021/jo' target='_blank'>tableau officiel</a>.",
         # ── Home
-        "home_welcome":       "Bienvenue sur LuxPay 🇱🇺",
+        "home_welcome":       "Bienvenue sur MyMoney@Lux 🇱🇺",
         "home_subtitle":      "Sélectionnez un calculateur dans le menu ci-dessus pour commencer.",
         # ── Salary calculator
         "salary_title":       "💼 Calculateur de salaire",

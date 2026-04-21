@@ -2,13 +2,17 @@
 <html lang="{{ lang }}">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}LuxPay{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1a6b7c">
+  <title>{% block title %}MyMoney@Lux{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
   <!-- ═══════════════════════════════════════════════════
        GOOGLE ADSENSE — Step 1: paste your publisher script here
-       Replace ca-pub-XXXXXXXXXXXXXXXX with your Publisher ID
   ════════════════════════════════════════════════════════
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
           crossorigin="anonymous"></script>
@@ -16,29 +20,23 @@
 </head>
 <body>
 
-  <nav class="nav">
-    <div class="nav-inner">
-      <span class="nav-title">🇱🇺 LuxPay</span>
-      <div class="nav-links">
-        <a href="{{ url_for('salary') }}"         {% if request.endpoint == 'salary' %}class="active"{% endif %}>💼 {{ t.nav_salary }}</a>
-        <a href="{{ url_for('parental_leave') }}"  {% if request.endpoint == 'parental_leave' %}class="active"{% endif %}>👶 {{ t.nav_parental }}</a>
-        <a href="{{ url_for('creche') }}"          {% if request.endpoint == 'creche' %}class="active"{% endif %}>🏡 {{ t.nav_creche }}</a>
-      </div>
+  <!-- ── Top header (desktop + mobile) ─────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-inner">
+      <span class="app-logo">🇱🇺 MyMoney@Lux</span>
       <div class="lang-switcher">
         <a href="{{ url_for('set_lang', lang='en') }}" class="lang-btn{% if lang == 'en' %} lang-active{% endif %}">EN</a>
         <a href="{{ url_for('set_lang', lang='fr') }}" class="lang-btn{% if lang == 'fr' %} lang-active{% endif %}">FR</a>
       </div>
     </div>
-  </nav>
+  </header>
 
-  <!-- ── Ad slot: Leaderboard (top of every page) ───────────────────── -->
+  <!-- ── Ad slot: top banner ────────────────────────────────────────── -->
   <div class="ad-slot ad-slot--leaderboard">
     <!-- ═══════════════════════════════════════════════════
-         GOOGLE ADSENSE — Step 2: paste your leaderboard ad unit here
-         Replace data-ad-client and data-ad-slot with your values
+         GOOGLE ADSENSE — leaderboard ad unit here
     ════════════════════════════════════════════════════════
-    <ins class="adsbygoogle"
-         style="display:block"
+    <ins class="adsbygoogle" style="display:block"
          data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
          data-ad-slot="XXXXXXXXXX"
          data-ad-format="auto"
@@ -52,13 +50,12 @@
     {% block content %}{% endblock %}
   </div>
 
-  <!-- ── Ad slot: Footer banner (bottom of every page) ─────────────── -->
+  <!-- ── Ad slot: Footer banner ─────────────────────────────────────── -->
   <div class="ad-slot ad-slot--footer">
     <!-- ═══════════════════════════════════════════════════
-         GOOGLE ADSENSE — Step 3: paste your footer ad unit here
+         GOOGLE ADSENSE — footer ad unit here
     ════════════════════════════════════════════════════════
-    <ins class="adsbygoogle"
-         style="display:block"
+    <ins class="adsbygoogle" style="display:block"
          data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
          data-ad-slot="XXXXXXXXXX"
          data-ad-format="auto"
@@ -67,6 +64,22 @@
     ═══════════════════════════════════════════════════════ -->
     <span class="ad-placeholder-label">{{ t.advertisement }}</span>
   </div>
+
+  <!-- ── Bottom tab navigation (mobile-first) ───────────────────────── -->
+  <nav class="bottom-nav">
+    <a href="{{ url_for('salary') }}"        class="bottom-nav__item {% if request.endpoint == 'salary' %}active{% endif %}">
+      <span class="bottom-nav__icon">💼</span>
+      <span class="bottom-nav__label">{{ t.nav_salary }}</span>
+    </a>
+    <a href="{{ url_for('parental_leave') }}" class="bottom-nav__item {% if request.endpoint == 'parental_leave' %}active{% endif %}">
+      <span class="bottom-nav__icon">👶</span>
+      <span class="bottom-nav__label">{{ t.nav_parental }}</span>
+    </a>
+    <a href="{{ url_for('creche') }}"         class="bottom-nav__item {% if request.endpoint == 'creche' %}active{% endif %}">
+      <span class="bottom-nav__icon">🏡</span>
+      <span class="bottom-nav__label">{{ t.nav_creche }}</span>
+    </a>
+  </nav>
 
 </body>
 </html>

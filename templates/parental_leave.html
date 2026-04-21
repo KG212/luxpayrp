@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t.pl_title }} — LuxPay{% endblock %}
+{% block title %}{{ t.pl_title }} — MyMoney@Lux{% endblock %}
 
 {% block content %}
 <div class="card">
@@ -35,41 +35,17 @@
       </select>
     </label>
 
-    <label class="checkbox-label">
-      <input type="checkbox" name="twins" value="yes"
-             {% if request.form.twins == "yes" %}checked{% endif %}>
-      {{ t.pl_twins }}
+    <!-- Twins toggle -->
+    <label class="toggle-row">
+      <span class="toggle-row__text">
+        <span class="toggle-row__label">{{ t.pl_twins }}</span>
+      </span>
+      <span class="toggle-switch">
+        <input type="checkbox" name="twins" value="yes"
+               {% if request.form.twins == "yes" %}checked{% endif %}>
+        <span class="toggle-slider"></span>
+      </span>
     </label>
-
-    <!-- ── Optional Frais de Déplacement section ───────────────────── -->
-    <label class="checkbox-label">
-      <input type="checkbox" name="compute_frais" value="yes" id="frais-check"
-             {% if request.form.compute_frais == "yes" %}checked{% endif %}
-             onchange="document.getElementById('frais-fields').style.display = this.checked ? 'flex' : 'none'">
-      {{ t.label_frais_toggle }}
-    </label>
-
-    <div id="frais-fields" class="frais-fields" {% if request.form.compute_frais != 'yes' %}style="display:none"{% endif %}>
-      <label>{{ t.label_residence }}
-        <select name="residence">
-          <option value="">{{ t.label_select }}</option>
-          {% for c in communes %}
-            <option value="{{ c }}" {% if request.form.residence == c %}selected{% endif %}>{{ c }}</option>
-          {% endfor %}
-        </select>
-      </label>
-
-      <label>{{ t.label_workplace }}
-        <select name="workplace">
-          <option value="">{{ t.label_select }}</option>
-          {% for c in communes %}
-            <option value="{{ c }}" {% if request.form.workplace == c %}selected{% endif %}>{{ c }}</option>
-          {% endfor %}
-        </select>
-        <small>{{ t.pl_residence_note }}</small>
-      </label>
-    </div>
-    <!-- ────────────────────────────────────────────────────────────── -->
 
     <div class="btn-row">
       <button type="submit" class="btn btn-primary">{{ t.btn_calculate }}</button>
@@ -80,27 +56,9 @@
 
 {% if result %}
 
-<!-- ── Ad slot: Rectangle (between form and results) ── -->
 <div class="ad-slot ad-slot--rectangle">
-  <!-- ═══════════════════════════════════════════════════
-       GOOGLE ADSENSE — paste your rectangle ad unit here
-  ════════════════════════════════════════════════════════
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-       data-ad-slot="XXXXXXXXXX"
-       data-ad-format="auto"
-       data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  ═══════════════════════════════════════════════════════ -->
   <span class="ad-placeholder-label">{{ t.advertisement }}</span>
 </div>
-
-  {% if result.compute_frais and result.residence and result.workplace %}
-    {% if not result.frais_available %}
-    <div class="info-text">{{ t.label_frais_na | safe }}</div>
-    {% endif %}
-  {% endif %}
 
   <h3>{{ t.label_results }} —
     {% if result.leave_type == 'full_time' %}{{ t.pl_ft_short }}
@@ -122,11 +80,6 @@
         <tr><td>{{ t.t_maladie_e }}</td>      <td>− {{ result.emp_maladie_espece | currency }}</td></tr>
         <tr><td>{{ t.t_pension }}</td>         <td>− {{ result.emp_pension | currency }}</td></tr>
         <tr><td>{{ t.t_cotisations }}</td>     <td>− {{ result.emp_cotisations | currency }}</td></tr>
-        {% if result.emp_frais > 0 %}
-        <tr><td>{{ t.t_frais_dep }}
-          {% if result.frais_units %}<small>({{ result.frais_units }} {{ t.label_frais_units }})</small>{% endif %}
-        </td>       <td>− {{ result.emp_frais | currency }}</td></tr>
-        {% endif %}
         <tr class="highlight"><td><strong>{{ t.t_imposable }}</strong></td><td><strong>{{ result.emp_imposable | currency }}</strong></td></tr>
       </table>
     </div>
@@ -168,7 +121,6 @@
       <tr class="highlight"><td><strong>{{ t.pl_net_total }} {{ result.duration }} {{ t.label_months }}</strong></td>
                              <td><strong>{{ result.net_total | currency }}</strong></td></tr>
     </table>
-
     <p class="info-text" style="margin-top:1rem;">{{ t.pl_note }}</p>
   </div>
 
