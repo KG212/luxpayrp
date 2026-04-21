@@ -31,6 +31,12 @@
       </select>
     </label>
 
+    <label class="checkbox-label">
+      <input type="checkbox" name="ticket_restaurant" value="yes"
+             {% if request.form.ticket_restaurant == "yes" %}checked{% endif %}>
+      {{ t.salary_ticket_label }}
+    </label>
+
     <!-- ── Optional Frais de Déplacement section ───────────────────── -->
     <label class="checkbox-label">
       <input type="checkbox" name="compute_frais" value="yes" id="frais-check"
@@ -95,37 +101,70 @@
     {% endif %}
   {% endif %}
 
+  <!-- ── Your Inputs ── -->
+  <h3>{{ t.salary_section_inputs }}</h3>
   <table>
-    <caption>{{ t.salary_breakdown }}</caption>
     <tr><th>{{ t.label_item }}</th><th>{{ t.label_amount }}</th></tr>
     <tr><td>{{ t.salary_gross }}</td>        <td>{{ result.gross_month | currency }}</td></tr>
+    <tr><td>{{ t.salary_gross_annual }}</td> <td>{{ result.gross_year | currency }}</td></tr>
     <tr><td>{{ t.salary_car_col }}</td>      <td>{{ result.car_cost | currency }}</td></tr>
-    <tr><td>{{ t.salary_total_m }}</td>      <td>{{ result.total_month | currency }}</td></tr>
-    <tr><td>{{ t.salary_total_y }}</td>      <td>{{ result.total_year | currency }}</td></tr>
-    <tr class="section-divider"><td colspan="2"></td></tr>
+    <tr>
+      <td>{{ t.salary_ticket_label }}</td>
+      <td>
+        {% if result.has_ticket %}
+          <span class="tag-free" style="background:#dcfce7;color:#166534;">{{ t.label_yes }}</span>
+        {% else %}
+          <span class="tag-free" style="background:#f3f4f6;color:#6b7280;">{{ t.label_no }}</span>
+        {% endif %}
+      </td>
+    </tr>
+  </table>
+
+  <!-- ── Cotisations sociales ── -->
+  <h3>{{ t.salary_section_cot }}</h3>
+  <table>
+    <tr><th>{{ t.label_item }}</th><th>{{ t.label_amount }}</th></tr>
     <tr><td>{{ t.salary_maladie }}</td>      <td>− {{ result.assurance_maladie | currency }}</td></tr>
     <tr><td>{{ t.salary_maladie_e }}</td>    <td>− {{ result.assurance_maladie_espece | currency }}</td></tr>
     <tr><td>{{ t.salary_pension }}</td>      <td>− {{ result.assurance_pension | currency }}</td></tr>
-    <tr><td>{{ t.salary_cotisations }}</td>  <td>− {{ result.cotisations_totales | currency }}</td></tr>
+    <tr class="highlight">
+      <td><strong>{{ t.salary_cotisations }}</strong></td>
+      <td><strong>− {{ result.cotisations_totales | currency }}</strong></td>
+    </tr>
+  </table>
+
+  <!-- ── Impôt ── -->
+  <h3>{{ t.salary_section_impot }}</h3>
+  <table>
+    <tr><th>{{ t.label_item }}</th><th>{{ t.label_amount }}</th></tr>
+    <tr><td>{{ t.salary_imposable }}</td>    <td>{{ result.imposable | currency }}</td></tr>
     {% if result.frais_deplacement > 0 %}
     <tr><td>{{ t.salary_frais }}
       {% if result.frais_units %}<small>({{ result.frais_units }} {{ t.label_frais_units }})</small>{% endif %}
     </td>
         <td>− {{ result.frais_deplacement | currency }}</td></tr>
     {% endif %}
-    <tr class="section-divider"><td colspan="2"></td></tr>
-    <tr><td>{{ t.salary_imposable }}</td>    <td>{{ result.imposable | currency }}</td></tr>
     <tr><td>{{ t.salary_dependance }}</td>   <td>− {{ result.assurance_dependance | currency }}</td></tr>
     <tr><td>{{ t.salary_cis }}</td>          <td>+ {{ result.cis | currency }}</td></tr>
-    <tr><td>{{ t.salary_impot }}</td>        <td>− {{ result.impot | currency }}</td></tr>
-    <tr class="section-divider"><td colspan="2"></td></tr>
-    <tr><td>{{ t.salary_net_before }}</td>   <td>{{ result.net | currency }}</td></tr>
-    <tr><td>{{ t.salary_ticket }}</td>       <td>− {{ result.deduc_ticket | currency }}</td></tr>
-    <tr><td>{{ t.salary_car_ded }}</td>      <td>− {{ result.car_cost | currency }}</td></tr>
-    <tr class="section-divider"><td colspan="2"></td></tr>
-    <tr class="highlight"><td><strong>{{ t.salary_received_m }}</strong></td><td><strong>{{ result.restant | currency }}</strong></td></tr>
-    <tr class="highlight"><td><strong>{{ t.salary_received_y }}</strong></td><td><strong>{{ result.restant_year | currency }}</strong></td></tr>
+    <tr class="highlight">
+      <td><strong>{{ t.salary_impot }}</strong></td>
+      <td><strong>− {{ result.impot | currency }}</strong></td>
+    </tr>
   </table>
+
+  <!-- ── Final ── -->
+  <table style="margin-top:1rem;">
+    <tr><th>{{ t.label_item }}</th><th>{{ t.label_amount }}</th></tr>
+    <tr class="highlight">
+      <td><strong>{{ t.salary_received_m }}</strong></td>
+      <td><strong>{{ result.restant | currency }}</strong></td>
+    </tr>
+    <tr>
+      <td>{{ t.salary_received_y }}</td>
+      <td>{{ result.restant_year | currency }}</td>
+    </tr>
+  </table>
+
 </div>
 {% endif %}
 {% endblock %}

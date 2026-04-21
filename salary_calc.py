@@ -242,9 +242,11 @@ def calculate_parental_leave(avg_gross, leave_type, twins, social_class,
         "ssm_max":            PARENTAL_LEAVE_MAX,
     }
 
-def calculate_salary(gross_salary, car_cost, frais_deplacement: float, social_class):
+def calculate_salary(gross_salary, car_cost, frais_deplacement: float, social_class,
+                     has_ticket_restaurant: bool = False):
     total = gross_salary + car_cost
     total_year = total * 12
+    gross_year = round(gross_salary * 12, 2)
 
     assurance_maladie = round(total * 0.028, 2)
     assurance_maladie_espece = round(gross_salary * 0.0025, 2)
@@ -265,15 +267,17 @@ def calculate_salary(gross_salary, car_cost, frais_deplacement: float, social_cl
     impot = calculate_tax(imposable, social_class)
     net = round(total - cotisations_totales - impot + cis - assurance_dependance, 2)
 
-    deduc_ticket = 50.4
+    deduc_ticket = 50.4 if has_ticket_restaurant else 0.0
     restant = round(net - car_cost - deduc_ticket, 2)
     restant_year = round(restant * 12, 2)
 
     return {
         "gross_month": gross_salary,
+        "gross_year": gross_year,
         "car_cost": car_cost,
         "total_month": total,
         "total_year": total_year,
+        "has_ticket": has_ticket_restaurant,
         "assurance_maladie": assurance_maladie,
         "assurance_maladie_espece": assurance_maladie_espece,
         "assurance_pension": assurance_pension,

@@ -43,7 +43,8 @@ def salary():
             gross        = float(request.form["gross_salary"])
             car          = float(request.form.get("car_cost") or "0")
             social_class = request.form["social_class"]
-            compute_frais = request.form.get("compute_frais") == "yes"
+            compute_frais      = request.form.get("compute_frais") == "yes"
+            ticket_restaurant  = request.form.get("ticket_restaurant") == "yes"
             residence    = request.form.get("residence", "").strip()
             workplace    = request.form.get("workplace", "").strip()
 
@@ -61,7 +62,8 @@ def salary():
                     frais_amount, frais_units, frais_ok = get_frais_deplacement(
                         residence, workplace)
 
-                result = calculate_salary(gross, car, frais_amount, social_class)
+                result = calculate_salary(gross, car, frais_amount, social_class,
+                                          ticket_restaurant)
                 result['frais_units']     = frais_units
                 result['frais_available'] = frais_ok
                 result['residence']       = residence
