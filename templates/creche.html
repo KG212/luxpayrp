@@ -103,6 +103,7 @@
   </div>
 
   <h3>{{ t.creche_breakdown }} — {{ result.hours_per_week }} h/week</h3>
+  <div class="table-scroll">
   <table>
     <caption>{{ t.creche_breakdown }} ({{ t.creche_sea_mc if result.structure_type == "sea" else t.creche_ap_short }})</caption>
     <tr><th>{{ t.creche_tranche }}</th><th>{{ t.creche_hours_col }}</th><th>{{ t.creche_hours_used }}</th><th>{{ t.creche_rate_h }}</th><th>{{ t.creche_parent_week }}</th></tr>
@@ -123,6 +124,7 @@
     </tr>
     {% endif %}
   </table>
+  </div>
 
   {% if result.meals_per_week > 0 %}
   <h3>{{ t.creche_meals_sec }} — {{ result.meals_per_week }} / week</h3>
@@ -137,6 +139,7 @@
   {% endif %}
 
   <h3>{{ t.creche_summary }}</h3>
+  <div class="table-scroll">
   <table>
     <caption>{{ t.creche_based_on }} {{ result.weeks_per_year }} {{ t.creche_weeks_year }}</caption>
     <tr><th>{{ t.label_item }}</th><th>{{ t.label_per_week }}</th><th>{{ t.label_per_month }}</th><th>{{ t.label_per_year }}</th></tr>
@@ -184,6 +187,7 @@
       <td><strong>{{ result.total_parent_year | currency }}</strong></td>
     </tr>
   </table>
+  </div>
 
   <p class="info-text" style="margin-top:1rem;">
     {{ t.creche_state_note.replace('{rate}', "%.2f"|format(result.state_rate_per_hour)) | safe }}

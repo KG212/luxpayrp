@@ -26,6 +26,7 @@
 html {
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;  /* block horizontal scroll at root */
 }
 
 body {
@@ -36,6 +37,8 @@ body {
   line-height: 1.5;
   padding-top: var(--header-h);
   padding-bottom: 2rem;
+  overflow-x: hidden;  /* prevent any child from pushing page width */
+  max-width: 100vw;
 }
 
 /* ── App header ───────────────────────────────────── */
@@ -406,21 +409,32 @@ tr.section-divider td {
   background: none;
 }
 
+/* ── Table scroll wrapper (prevents horizontal page overflow) ── */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ── Side-by-side tables (parental leave) ─────────── */
 .tables-wrapper {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
   margin-bottom: 0.5rem;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .income-table {
   flex: 1;
-  min-width: 240px;
+  min-width: 0;          /* allow shrinking below 240px on small screens */
   background: var(--card);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 1rem;
+  overflow-x: auto;      /* table inside can scroll within its card */
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Home hero ────────────────────────────────────── */
