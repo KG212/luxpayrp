@@ -7,4 +7,22 @@
   <h2>{{ t.home_welcome }}</h2>
   <p>{{ t.home_subtitle }}</p>
 </div>
+
+<div class="home-cards">
+  <a href="{{ url_for('salary') }}" class="home-card card">
+    <h3>{{ t.home_card_salary_title }}</h3>
+    <p>{{ t.home_card_salary_desc }}</p>
+    <span class="btn btn-primary">{{ t.home_card_btn }}</span>
+  </a>
+  <a href="{{ url_for('parental_leave') }}" class="home-card card">
+    <h3>{{ t.home_card_pl_title }}</h3>
+    <p>{{ t.home_card_pl_desc }}</p>
+    <span class="btn btn-primary">{{ t.home_card_btn }}</span>
+  </a>
+  <a href="{{ url_for('creche') }}" class="home-card card">
+    <h3>{{ t.home_card_creche_title }}</h3>
+    <p>{{ t.home_card_creche_desc }}</p>
+    <span class="btn btn-primary">{{ t.home_card_btn }}</span>
+  </a>
+</div>
 {% endblock %}

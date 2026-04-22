@@ -382,21 +382,24 @@ def get_csa_income_category(monthly_taxable, revis=False):
     return "gte4.5"
 
 def calculate_csa(monthly_taxable, n_children, structure_type, hours_per_week,
-                  weeks_per_year=46, meals_per_week=0, revis=False):
-    income_cat = get_csa_income_category(monthly_taxable, revis)
-    child_key  = min(n_children, 4)
-    tranches   = CSA_BAREME[(income_cat, child_key)]
-    state_rate = CSA_STATE_MAX_SEA if structure_type == "sea" else CSA_STATE_MAX_AP
+                  weeks_per_year=46, meals_per_week=0, revis=False, structure_hourly_rate=None):
+    income_cat      = get_csa_income_category(monthly_taxable, revis)
+    child_key       = min(n_children, 4)
+    tranches        = CSA_BAREME[(income_cat, child_key)]
+    state_rate      = CSA_STATE_MAX_SEA if structure_type == "sea" else CSA_STATE_MAX_AP
+    excess_per_hour = max(0.0, structure_hourly_rate - state_rate) if structure_hourly_rate else 0.0
 
     # Cost per week — break down by tranche
     tranche_details   = []
     total_parent_week = 0.0
+    total_excess_week = 0.0
     prev_upper        = 0
 
     for i, (upper, rate_ap, rate_sea) in enumerate(tranches):
-        rate            = rate_ap if structure_type == "ap" else rate_sea
+        rate             = rate_ap if structure_type == "ap" else rate_sea
         hours_in_tranche = max(0, min(hours_per_week, upper) - prev_upper)
-        parent_cost     = round(hours_in_tranche * rate, 2)
+        parent_cost      = round(hours_in_tranche * rate, 2)
+        excess_cost      = round(hours_in_tranche * excess_per_hour, 2)
         tranche_details.append({
             "label":    f"Tranche {i + 1}",
             "range":    f"{prev_upper + 1}–{upper} h/week",
@@ -406,11 +409,14 @@ def calculate_csa(monthly_taxable, n_children, structure_type, hours_per_week,
             "is_free":  rate == 0.0,
         })
         total_parent_week += parent_cost
+        total_excess_week += excess_cost
         prev_upper = upper
 
-    t3_max             = tranches[-1][0]
-    unsubsidized_hours = max(0, hours_per_week - t3_max)
-    covered_hours      = min(hours_per_week, t3_max)
+    t3_max                 = tranches[-1][0]
+    unsubsidized_hours     = max(0, hours_per_week - t3_max)
+    covered_hours          = min(hours_per_week, t3_max)
+    total_excess_week      = round(total_excess_week, 2)
+    unsubsidized_cost_week = round(unsubsidized_hours * structure_hourly_rate, 2) if (structure_hourly_rate and unsubsidized_hours > 0) else 0.0
 
     # Meals
     meal_rate          = CSA_MEAL_RATE.get(income_cat, 0.0)
@@ -418,30 +424,35 @@ def calculate_csa(monthly_taxable, n_children, structure_type, hours_per_week,
 
     total_parent_week  = round(total_parent_week, 2)
     wk_factor          = weeks_per_year / 12
-    total_parent_month = round((total_parent_week + meal_cost_week) * wk_factor, 2)
-    total_parent_year  = round((total_parent_week + meal_cost_week) * weeks_per_year, 2)
+    total_all_week     = total_parent_week + total_excess_week + unsubsidized_cost_week + meal_cost_week
+    total_parent_month = round(total_all_week * wk_factor, 2)
+    total_parent_year  = round(total_all_week * weeks_per_year, 2)
 
     # State max contribution estimate (for informational display)
-    state_week         = round(covered_hours * state_rate, 2)
-    state_month        = round(state_week * wk_factor, 2)
+    state_week  = round(covered_hours * state_rate, 2)
+    state_month = round(state_week * wk_factor, 2)
 
     return {
-        "income_cat":           income_cat,
-        "income_cat_label":     CSA_INCOME_LABELS[income_cat],
-        "structure_type":       structure_type,
-        "hours_per_week":       hours_per_week,
-        "t3_max_hours":         t3_max,
-        "unsubsidized_hours":   unsubsidized_hours,
-        "tranche_details":      tranche_details,
-        "total_parent_week":    total_parent_week,
-        "meals_per_week":       meals_per_week,
-        "meal_rate":            meal_rate,
-        "meal_cost_week":       meal_cost_week,
-        "total_parent_month":   total_parent_month,
-        "total_parent_year":    total_parent_year,
-        "state_rate_per_hour":  state_rate,
-        "state_week":           state_week,
-        "state_month":          state_month,
-        "weeks_per_year":       weeks_per_year,
-        "ssm":                  SSM_NON_QUALIFIED,
+        "income_cat":              income_cat,
+        "income_cat_label":        CSA_INCOME_LABELS[income_cat],
+        "structure_type":          structure_type,
+        "hours_per_week":          hours_per_week,
+        "t3_max_hours":            t3_max,
+        "unsubsidized_hours":      unsubsidized_hours,
+        "tranche_details":         tranche_details,
+        "total_parent_week":       total_parent_week,
+        "total_excess_week":       total_excess_week,
+        "unsubsidized_cost_week":  unsubsidized_cost_week,
+        "excess_per_hour":         excess_per_hour,
+        "structure_hourly_rate":   structure_hourly_rate,
+        "meals_per_week":          meals_per_week,
+        "meal_rate":               meal_rate,
+        "meal_cost_week":          meal_cost_week,
+        "total_parent_month":      total_parent_month,
+        "total_parent_year":       total_parent_year,
+        "state_rate_per_hour":     state_rate,
+        "state_week":              state_week,
+        "state_month":             state_month,
+        "weeks_per_year":          weeks_per_year,
+        "ssm":                     SSM_NON_QUALIFIED,
     }

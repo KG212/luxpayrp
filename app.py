@@ -99,13 +99,15 @@ def creche():
     error_key = None
     if request.method == "POST":
         try:
-            revis           = request.form.get("revis") == "yes"
-            monthly_taxable = 0.0 if revis else float(request.form["monthly_taxable"])
-            n_children      = int(request.form["n_children"])
-            structure_type  = request.form["structure_type"]
-            hours_per_week  = float(request.form["hours_per_week"])
-            weeks_per_year  = int(request.form.get("weeks_per_year", 46))
-            meals_per_week  = int(request.form.get("meals_per_week", 0))
+            revis                = request.form.get("revis") == "yes"
+            monthly_taxable      = 0.0 if revis else float(request.form["monthly_taxable"])
+            n_children           = int(request.form["n_children"])
+            structure_type       = request.form["structure_type"]
+            hours_per_week       = float(request.form["hours_per_week"])
+            weeks_per_year       = int(request.form.get("weeks_per_year", 46))
+            meals_per_week       = int(request.form.get("meals_per_week", 0))
+            _shr                 = request.form.get("structure_hourly_rate", "").strip()
+            structure_hourly_rate = float(_shr) if _shr else None
 
             if not revis and monthly_taxable <= 0:
                 error_key = "err_income_pos"
@@ -115,7 +117,8 @@ def creche():
                 error_key = "err_weeks"
             else:
                 result = calculate_csa(monthly_taxable, n_children, structure_type,
-                                       hours_per_week, weeks_per_year, meals_per_week, revis)
+                                       hours_per_week, weeks_per_year, meals_per_week, revis,
+                                       structure_hourly_rate)
         except ValueError:
             error_key = "err_fields"
     return render_template("creche.html", result=result, error_key=error_key,

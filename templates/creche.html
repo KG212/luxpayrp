@@ -50,6 +50,13 @@
       </select>
     </label>
 
+    <label>{{ t.creche_struct_price }}
+      <input type="number" name="structure_hourly_rate" min="0" step="0.01"
+             placeholder="{{ t.creche_struct_price_ph }}"
+             value="{{ request.form.structure_hourly_rate or '' }}">
+      <small>{{ t.creche_struct_price_note }}</small>
+    </label>
+
     <label>{{ t.creche_hours }}
       <input type="number" name="hours_per_week" min="1" max="60" step="0.5"
              placeholder="e.g. 40"
@@ -139,6 +146,22 @@
       <td>{{ (result.total_parent_week * result.weeks_per_year / 12) | round(2) | currency }}</td>
       <td>{{ (result.total_parent_week * result.weeks_per_year) | round(2) | currency }}</td>
     </tr>
+    {% if result.total_excess_week > 0 %}
+    <tr class="row-warn">
+      <td>{{ t.creche_excess }} (+ € {{ "%.2f"|format(result.excess_per_hour) }}/h)</td>
+      <td>{{ result.total_excess_week | currency }}</td>
+      <td>{{ (result.total_excess_week * result.weeks_per_year / 12) | round(2) | currency }}</td>
+      <td>{{ (result.total_excess_week * result.weeks_per_year) | round(2) | currency }}</td>
+    </tr>
+    {% endif %}
+    {% if result.unsubsidized_cost_week > 0 %}
+    <tr class="row-warn">
+      <td>{{ t.creche_unsub_cost }} ({{ result.unsubsidized_hours }} h × € {{ "%.2f"|format(result.structure_hourly_rate) }})</td>
+      <td>{{ result.unsubsidized_cost_week | currency }}</td>
+      <td>{{ (result.unsubsidized_cost_week * result.weeks_per_year / 12) | round(2) | currency }}</td>
+      <td>{{ (result.unsubsidized_cost_week * result.weeks_per_year) | round(2) | currency }}</td>
+    </tr>
+    {% endif %}
     {% if result.meals_per_week > 0 %}
     <tr>
       <td>{{ t.creche_meals_cost }}</td>
@@ -156,7 +179,7 @@
     <tr class="section-divider"><td colspan="4"></td></tr>
     <tr class="highlight">
       <td><strong>{{ t.creche_total }}</strong></td>
-      <td><strong>{{ (result.total_parent_week + result.meal_cost_week) | round(2) | currency }}</strong></td>
+      <td><strong>{{ (result.total_parent_week + result.total_excess_week + result.unsubsidized_cost_week + result.meal_cost_week) | round(2) | currency }}</strong></td>
       <td><strong>{{ result.total_parent_month | currency }}</strong></td>
       <td><strong>{{ result.total_parent_year | currency }}</strong></td>
     </tr>

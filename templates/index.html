@@ -31,6 +31,30 @@
       </select>
     </label>
 
+    <!-- Frais de déplacement toggle -->
+    <label class="toggle-row">
+      <span class="toggle-row__text">
+        <span class="toggle-row__label">{{ t.label_frais_toggle }}</span>
+        <span class="toggle-row__sub">{{ t.label_frais_sub }}</span>
+      </span>
+      <span class="toggle-switch">
+        <input type="checkbox" name="compute_frais" value="yes" id="frais-toggle"
+               {% if request.form.compute_frais == "yes" %}checked{% endif %}
+               onchange="document.getElementById('frais-section').style.display = this.checked ? 'flex' : 'none'">
+        <span class="toggle-slider"></span>
+      </span>
+    </label>
+
+    <div id="frais-section" class="frais-fields"
+         {% if request.form.compute_frais != "yes" %}style="display:none"{% endif %}>
+      <label>{{ t.label_frais_amount }}
+        <input type="number" name="frais_amount" min="0" step="0.01"
+               placeholder="0.00"
+               value="{{ request.form.frais_amount or '0' }}">
+      </label>
+      <div class="info-text" style="margin:0">{{ t.label_frais_help | safe }}</div>
+    </div>
+
     <!-- Ticket Restaurant toggle -->
     <label class="toggle-row">
       <span class="toggle-row__text">
@@ -44,34 +68,16 @@
       </span>
     </label>
 
-    <!-- Frais de Déplacement toggle -->
-    <label class="toggle-row">
-      <span class="toggle-row__text">
-        <span class="toggle-row__label">{{ t.label_frais_toggle }}</span>
-        <span class="toggle-row__sub">{{ t.label_frais_sub }}</span>
-      </span>
-      <span class="toggle-switch">
-        <input type="checkbox" name="compute_frais" value="yes" id="frais-check"
-               {% if request.form.compute_frais == "yes" %}checked{% endif %}
-               onchange="document.getElementById('frais-fields').style.display = this.checked ? 'flex' : 'none'">
-        <span class="toggle-slider"></span>
-      </span>
-    </label>
-
-    <div id="frais-fields" class="frais-fields" {% if request.form.compute_frais != 'yes' %}style="display:none"{% endif %}>
-      <label>{{ t.label_frais_amount }}
-        <input type="number" name="frais_amount" min="0" step="0.01"
-               placeholder="ex. 24.75"
-               value="{{ request.form.frais_amount or '' }}">
-        <small>{{ t.label_frais_help }}</small>
-      </label>
-    </div>
-
     <div class="btn-row">
       <button type="submit" class="btn btn-primary">{{ t.btn_calculate }}</button>
       <a href="{{ url_for('salary') }}" class="btn btn-secondary">{{ t.btn_reset }}</a>
     </div>
   </form>
+
+  <!-- Frais de déplacement reference -->
+  <div class="info-text" style="margin-top:1rem;">
+    {{ t.label_frais_ref | safe }}
+  </div>
 </div>
 
 {% if result %}
@@ -82,7 +88,6 @@
 
 <div class="card">
   <h2>{{ t.label_results }}</h2>
-
 
   <!-- Vos données -->
   <h3>{{ t.salary_section_inputs }}</h3>
@@ -117,7 +122,7 @@
     <tr><th>{{ t.label_item }}</th><th>{{ t.label_amount }}</th></tr>
     <tr><td>{{ t.salary_imposable }}</td>   <td>{{ result.imposable | currency }}</td></tr>
     {% if result.frais_deplacement > 0 %}
-    <tr><td>{{ t.salary_frais }}</td><td>− {{ result.frais_deplacement | currency }}</td></tr>
+    <tr><td>{{ t.salary_frais }}</td>       <td>− {{ result.frais_deplacement | currency }}</td></tr>
     {% endif %}
     <tr><td>{{ t.salary_dependance }}</td>  <td>− {{ result.assurance_dependance | currency }}</td></tr>
     <tr><td>{{ t.salary_cis }}</td>         <td>+ {{ result.cis | currency }}</td></tr>
